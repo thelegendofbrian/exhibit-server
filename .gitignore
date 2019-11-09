@@ -1,0 +1,6 @@
+datasource.properties
+build/
+.gradle/
+gradle/
+gradlew*
+.idea

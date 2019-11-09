@@ -1,0 +1,1 @@
+java -cp *.jar minepop.exhibit.admin.Admin %*
