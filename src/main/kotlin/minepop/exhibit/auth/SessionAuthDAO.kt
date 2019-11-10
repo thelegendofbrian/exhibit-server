@@ -44,27 +44,37 @@ class SessionAuthDAO : DAO() {
                 it.executeUpdate()
             }
             // delete all but 3 latest records
-            c.prepareStatement("delete from quick_auth where auth_key not in (" +
-                    "select auth_key from quick_auth where user_name = ? order by date_created desc fetch first 3 rows only)").use {
+            var quickAuthKeys: Int = 0
+            c.prepareStatement("select count(1) from quick_auth where user_name = ?").use {
                 it.setString(1, user.userName)
-                it.executeUpdate()
+                val rs = it.executeQuery()
+                if (rs.next()) {
+                    quickAuthKeys = rs.getInt(1)
+                }
+            }
+            if (quickAuthKeys > 3) {
+                c.prepareStatement("delete from exhibit.quick_auth where user_name = ? order by date_created asc limit ?").use {
+                    it.setString(1, user.userName)
+                    it.setInt(2, quickAuthKeys - 3)
+                    it.executeUpdate()
+                }
             }
         }
     }
 
     @Throws(SQLException::class)
-    fun retrieveQuickAuthKeys(user: User): List<String> {
-        val keys = mutableListOf<String>()
+    fun retrieveUserForQuickAuth(authKey: String): String? {
+        var userName: String? = null
         connect().use {
             c ->
-            c.prepareStatement("select auth_key from quick_auth where user_name = ?").use {
-                it.setString(1, user.userName)
+            c.prepareStatement("select user_name from quick_auth where auth_key = ?").use {
+                it.setString(1, authKey)
                 val rs = it.executeQuery()
-                while (rs.next()) {
-                    keys.add(rs.getString(1))
+                if (rs.next()) {
+                    userName = rs.getString(1)
                 }
             }
         }
-        return keys
+        return userName
     }
 }

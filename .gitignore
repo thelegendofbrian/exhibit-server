@@ -1,4 +1,5 @@
 datasource.properties
+exhibit-server.properties
 build/
 .gradle/
 gradle/
