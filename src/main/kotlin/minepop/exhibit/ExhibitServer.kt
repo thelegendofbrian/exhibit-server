@@ -15,39 +15,29 @@ import io.ktor.http.content.*
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
 import minepop.exhibit.auth.installExhibitAuth
 import minepop.exhibit.checkin.checkinRoutes
-import java.io.File
-import java.security.KeyStore
 
 val conf = AppConfig()
 val prod = Files.exists(Paths.get(conf.getKeystorePath()))
 
-fun main() {
-    val env = applicationEngineEnvironment {
-        module {
-            module()
-        }
-        if (prod) {
-            val path = File(conf.getKeystorePath())
-            val passwd = conf.getKeystorePasswd().toCharArray()
-            sslConnector(keyStore = KeyStore.getInstance(path, passwd), keyAlias = conf.getKeystoreAlias(),
-                keyStorePassword = { passwd },
-                privateKeyPassword = { passwd }) {
-                port = conf.getPort()
-                keyStorePath = path
+fun main(args: Array<String>) {
+    if (prod) {
+        io.ktor.server.netty.EngineMain.main(args)
+    } else {
+        val env = applicationEngineEnvironment {
+            module {
+                module()
             }
-        } else {
             connector {
                 host = "0.0.0.0"
                 port = conf.getPort()
             }
         }
+        embeddedServer(Netty, env).start(true)
     }
-    embeddedServer(Netty, env).start(true)
 }
 
 data class ExhibitSession(val username: String)
