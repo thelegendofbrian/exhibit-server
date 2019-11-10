@@ -7,11 +7,11 @@ ktor {
         modules = [ minepop.exhibit.ExhibitServerKt.module ]
     }
     security {
-            ssl {
-                keyStore = /path/to/keystore
-                keyAlias = alias
-                keyStorePassword = changeit
-                privateKeyPassword = changeit
-            }
+        ssl {
+            keyStore = /path/to/keystore
+            keyAlias = alias
+            keyStorePassword = changeit
+            privateKeyPassword = changeit
         }
+    }
 }
