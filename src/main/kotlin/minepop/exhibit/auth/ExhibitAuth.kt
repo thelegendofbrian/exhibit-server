@@ -3,7 +3,6 @@ package minepop.exhibit.auth
 import io.ktor.auth.Authentication
 import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.form
-import io.ktor.http.renderSetCookieHeader
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
