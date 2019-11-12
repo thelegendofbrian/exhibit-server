@@ -20,10 +20,8 @@ fun Authentication.Configuration.installExhibitAuth() {
         skipWhen { it.sessions.get<ExhibitSession>() != null }
         validate { credentials ->
 
-            val quickAuth = request.cookies["Quick-Auth"]
-            if (quickAuth != null) {
-                val userName = dao.retrieveUserForQuickAuth(quickAuth)
-                if (userName != null) {
+            request.cookies["Quick-Auth"]?.let {
+                dao.retrieveUserForQuickAuth(it)?.let {
                     sessions.set(ExhibitSession(credentials.name))
                     return@validate UserIdPrincipal(credentials.name)
                 }

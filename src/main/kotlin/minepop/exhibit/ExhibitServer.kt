@@ -60,9 +60,8 @@ fun Application.module(testing: Boolean = false) {
     routing {
         if (!prod) {
             options("/*") {
-                val accessControlRequestMethod = call.request.headers["Access-Control-Request-Method"]
-                if (accessControlRequestMethod != null) {
-                    call.response.header("Access-Control-Allow-Methods", accessControlRequestMethod)
+                call.request.headers["Access-Control-Request-Method"]?.let {
+                    call.response.header("Access-Control-Allow-Methods", it)
                 }
             }
         }

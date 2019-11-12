@@ -21,8 +21,9 @@ fun Route.checkinRoutes() {
             if (pastDays != null) {
                 val checkins = checkinDAO.retrieveCheckins(pastDays)
                 call.respond(checkins)
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
             }
-            call.respond(HttpStatusCode.BadRequest)
         }
         post("/") {
             val userName = call.sessions.get<ExhibitSession>()?.username
@@ -32,8 +33,9 @@ fun Route.checkinRoutes() {
                 val body = JsonObject()
                 body.addProperty("date", date.time)
                 call.respond(body);
+            } else {
+                call.respond(HttpStatusCode.BadRequest)
             }
-            call.respond(HttpStatusCode.BadRequest)
         }
     }
 }
