@@ -19,6 +19,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
 import minepop.exhibit.auth.installExhibitAuth
 import minepop.exhibit.checkin.checkinRoutes
+import minepop.exhibit.schedule.scheduleRoutes
 
 val conf = AppConfig()
 val prod = Files.exists(Paths.get(conf.getKeystorePath()))
@@ -92,6 +93,7 @@ fun Application.module(testing: Boolean = false) {
                 }
             }
             checkinRoutes()
+            scheduleRoutes()
         }
     }
 }
