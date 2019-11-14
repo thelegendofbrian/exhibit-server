@@ -73,7 +73,7 @@ fun Application.module(testing: Boolean = false) {
         }
 
         intercept(ApplicationCallPipeline.Features) {
-            call.response.headers.append("Access-Control-Allow-Origin", if (prod) "https://" + conf.getHost() else "http://localhost:3000")
+            call.response.headers.append("Access-Control-Allow-Origin", if (prod) "https://${conf.getHost()}" else "http://localhost:${conf.getOriginPort()}")
             if (!prod) {
                 call.response.headers.append("Access-Control-Allow-Credentials", "true")
             }
