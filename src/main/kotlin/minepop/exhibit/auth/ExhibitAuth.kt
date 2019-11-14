@@ -22,7 +22,8 @@ fun Authentication.Configuration.installExhibitAuth() {
 
             request.cookies["Quick-Auth"]?.let {
                 dao.retrieveUserForQuickAuth(it)?.let {
-                    sessions.set(ExhibitSession(credentials.name))
+                    userName ->
+                    sessions.set(ExhibitSession(userName))
                     return@validate UserIdPrincipal(credentials.name)
                 }
             }
