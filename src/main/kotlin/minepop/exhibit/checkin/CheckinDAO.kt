@@ -10,7 +10,7 @@ class CheckinDAO : DAO() {
 
     @Throws(SQLException::class)
     fun createCheckin(userName: String, timeZoneOffset: Int): Date {
-        val date = Date.valueOf(LocalDate.now(ZoneOffset.of("+0${timeZoneOffset / 60}:00")))
+        val date = Date.valueOf(LocalDate.now(ZoneOffset.of("-0${timeZoneOffset / 60}:00")))
         connect().use {
             c ->
             c.prepareStatement("insert into checkin(user_name, date) values(?, ?)").use {
