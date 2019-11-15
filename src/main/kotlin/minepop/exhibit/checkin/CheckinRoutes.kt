@@ -16,20 +16,22 @@ val checkinDAO = CheckinDAO()
 
 fun Route.checkinRoutes() {
     route("checkin") {
-        get("/") {
+        get("/{groupName}") {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
+            val groupName = call.parameters["groupName"]!!
             if (pastDays != null) {
-                val checkins = checkinDAO.retrieveCheckins(pastDays)
+                val checkins = checkinDAO.retrieveCheckins(groupName, pastDays)
                 call.respond(checkins)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
             }
         }
-        post("/") {
+        post("/{groupName}") {
             val userName = call.sessions.get<ExhibitSession>()?.username
+            val groupName = call.parameters["groupName"]!!
             val timeZoneOffset = call.request.queryParameters["timeZoneOffset"]?.toIntOrNull()
             if (userName != null && timeZoneOffset != null) {
-                val date = checkinDAO.createCheckin(userName, timeZoneOffset)
+                val date = checkinDAO.createCheckin(userName, groupName, timeZoneOffset)
                 val body = JsonObject()
                 body.addProperty("date", date.time)
                 call.respond(body);
