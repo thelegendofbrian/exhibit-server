@@ -28,9 +28,11 @@ class CheckinDAO : DAO() {
         val checkins = mutableListOf<Checkin>()
         connect().use {
             c ->
-            c.prepareStatement("select user_name, date from checkin where date + ? days > current date and group_name = ?").use {
+            // FIXME: Add time zone as parameter
+            c.prepareStatement("select user_name, date from checkin where date_add(date,interval ? day) > CONVERT_TZ(now(),'+00:00','-08:00') and group_name = ?").use {
                 it.setInt(1, pastDays)
                 it.setString(2, groupName)
+                //it.setString(3, userTimeZone)
                 val rs = it.executeQuery()
                 while (rs.next()) {
                     checkins.add(Checkin(rs.getString(1), rs.getDate(2)))

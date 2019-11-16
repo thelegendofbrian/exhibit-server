@@ -28,6 +28,7 @@ fun main(args: Array<String>) {
     if (prod) {
         io.ktor.server.netty.EngineMain.main(args)
     } else {
+        System.setProperty("user.timezone", "GMT");
         val env = applicationEngineEnvironment {
             module {
                 module()
