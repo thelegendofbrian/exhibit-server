@@ -23,7 +23,7 @@ fun Authentication.Configuration.installExhibitAuth() {
             request.cookies["Quick-Auth"]?.let {
                 dao.retrieveUserForQuickAuth(it)?.let {
                     userName ->
-                    sessions.set(ExhibitSession(userName))
+                    sessions.set(ExhibitSession(userName, request.headers["timezone"]!!))
                     return@validate UserIdPrincipal(credentials.name)
                 }
             }
@@ -35,7 +35,7 @@ fun Authentication.Configuration.installExhibitAuth() {
 
             val digest = Crypto.hash(credentials.password.toCharArray(), user.salt)
             if (digest.contentEquals(user.saltedHash)) {
-                sessions.set(ExhibitSession(credentials.name))
+                sessions.set(ExhibitSession(credentials.name, request.headers["timezone"]!!))
                 val quickAuthKey = UUID.randomUUID().toString()
 
                 response.cookies.append("Quick-Auth", quickAuthKey, maxAge = 2000000000, secure = prod, httpOnly = true)

@@ -17,6 +17,7 @@ import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
+import io.ktor.util.pipeline.PipelineContext
 import minepop.exhibit.auth.installExhibitAuth
 import minepop.exhibit.checkin.checkinRoutes
 import minepop.exhibit.schedule.scheduleRoutes
@@ -28,7 +29,6 @@ fun main(args: Array<String>) {
     if (prod) {
         io.ktor.server.netty.EngineMain.main(args)
     } else {
-        System.setProperty("user.timezone", "GMT");
         val env = applicationEngineEnvironment {
             module {
                 module()
@@ -42,7 +42,11 @@ fun main(args: Array<String>) {
     }
 }
 
-data class ExhibitSession(val username: String)
+data class ExhibitSession(val username: String, val timezone: String)
+
+fun PipelineContext<Unit, ApplicationCall>.exhibitSession(): ExhibitSession {
+    return this.call.sessions.get<ExhibitSession>()!!
+}
 
 fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation) {
@@ -65,6 +69,7 @@ fun Application.module(testing: Boolean = false) {
                 call.request.headers["Access-Control-Request-Method"]?.let {
                     call.response.header("Access-Control-Allow-Methods", it)
                 }
+                call.respond(HttpStatusCode.OK)
             }
         }
 
@@ -77,6 +82,7 @@ fun Application.module(testing: Boolean = false) {
             call.response.headers.append("Access-Control-Allow-Origin", if (prod) "https://${conf.getHost()}" else "http://localhost:${conf.getOriginPort()}")
             if (!prod) {
                 call.response.headers.append("Access-Control-Allow-Credentials", "true")
+                call.response.headers.append("Access-Control-Allow-Headers", "timezone")
             }
         }
 
