@@ -6,13 +6,19 @@ import java.sql.SQLException
 class SessionAuthDAO : DAO() {
 
     @Throws(SQLException::class)
-    fun retrieveUser(userName: String): User? {
+    fun retrieveUser(name: String? = null, id: Long? = null): User? {
         connect().use { c ->
-            c.prepareStatement("select failed_logins, salt, salted_hash from user where user_name = ?").use {
-                it.setString(1, userName)
+            c.prepareStatement("select id, name, failed_logins, salt, salted_hash from user where" +
+                    " ${if (name == null) "id" else "name"} = ?").use {
+                if (name == null) {
+                    it.setLong(1, id!!)
+                } else {
+                    it.setString(1, name)
+                }
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    return User(userName, rs.getInt(1), rs.getBytes(2), rs.getBytes(3))
+                    return User(rs.getLong(1), rs.getString(2),
+                        rs.getInt(3), rs.getBytes(4), rs.getBytes(5))
                 }
             }
         }
@@ -22,11 +28,11 @@ class SessionAuthDAO : DAO() {
     @Throws(SQLException::class)
     fun updateUser(user: User) {
         connect().use { c ->
-            c.prepareStatement("update user set failed_logins = ?, salt = ?, salted_hash = ? where user_name = ?").use {
+            c.prepareStatement("update user set failed_logins = ?, salt = ?, salted_hash = ? where name = ?").use {
                 it.setInt(1, user.failedLogins)
                 it.setBytes(2, user.salt)
                 it.setBytes(3, user.saltedHash)
-                it.setString(4, user.userName)
+                it.setString(4, user.name)
                 it.executeUpdate()
             }
         }
@@ -35,23 +41,23 @@ class SessionAuthDAO : DAO() {
     @Throws(SQLException::class)
     fun createQuickAuth(user: User, authKey: String) {
         connect().use { c ->
-            c.prepareStatement("insert into quick_auth(user_name, auth_key) values (?, ?)").use {
-                it.setString(1, user.userName)
+            c.prepareStatement("insert into quick_auth(user_id, auth_key) values (?, ?)").use {
+                it.setLong(1, user.id)
                 it.setString(2, authKey)
                 it.executeUpdate()
             }
             // delete all but 3 latest records
             var quickAuthKeys: Int = 0
-            c.prepareStatement("select count(1) from quick_auth where user_name = ?").use {
-                it.setString(1, user.userName)
+            c.prepareStatement("select count(1) from quick_auth where user_id = ?").use {
+                it.setLong(1, user.id)
                 val rs = it.executeQuery()
                 if (rs.next()) {
                     quickAuthKeys = rs.getInt(1)
                 }
             }
             if (quickAuthKeys > 3) {
-                c.prepareStatement("delete from exhibit.quick_auth where user_name = ? order by date_created asc limit ?").use {
-                    it.setString(1, user.userName)
+                c.prepareStatement("delete from exhibit.quick_auth where user_id = ? order by date_created asc limit ?").use {
+                    it.setLong(1, user.id)
                     it.setInt(2, quickAuthKeys - 3)
                     it.executeUpdate()
                 }
@@ -60,17 +66,20 @@ class SessionAuthDAO : DAO() {
     }
 
     @Throws(SQLException::class)
-    fun retrieveUserForQuickAuth(authKey: String): String? {
-        var userName: String? = null
+    fun retrieveUserForQuickAuth(authKey: String): User? {
+        var id: Long? = null
         connect().use { c ->
-            c.prepareStatement("select user_name from quick_auth where auth_key = ?").use {
+            c.prepareStatement("select user_id from quick_auth where auth_key = ?").use {
                 it.setString(1, authKey)
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    userName = rs.getString(1)
+                    id = rs.getLong(1)
                 }
             }
         }
-        return userName
+        id?.let {
+            return retrieveUser(id = id)
+        }
+        return null
     }
 }

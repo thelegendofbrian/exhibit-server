@@ -9,11 +9,11 @@ import java.time.ZoneId
 class CheckinDAO : DAO() {
 
     @Throws(SQLException::class)
-    fun createCheckin(userName: String, groupName: String, timeZone: String): Date {
+    fun createCheckin(userId: Long, groupName: String, timeZone: String): Date {
         val date = Date.valueOf(LocalDate.now(ZoneId.of(timeZone)))
         connect().use { c ->
-            c.prepareStatement("insert into checkin(user_name, group_name, date) values(?, ?, ?)").use {
-                it.setString(1, userName)
+            c.prepareStatement("insert into checkin(user_id, group_id, date) values(?, (select id from `group` where name = ?), ?)").use {
+                it.setLong(1, userId)
                 it.setString(2, groupName)
                 it.setDate(3, date)
                 it.executeUpdate()
@@ -27,9 +27,10 @@ class CheckinDAO : DAO() {
         val checkins = mutableListOf<Checkin>()
         val date = Date.valueOf(LocalDate.now(ZoneId.of(timeZone)))
         connect().use { c ->
-            var sql = "select user_name, date from checkin where date_add(date,interval ? day) > ? and group_name = ?"
+            var sql = "select user.name, date from checkin inner join user on user_id = user.id" +
+                    " inner join `group` on group_id = group.id where date_add(date,interval ? day) > ? and group.name = ?"
             userName.let {
-                sql += " and user_name = ?"
+                sql += " and user.name = ?"
             }
             c.prepareStatement(sql).use {ps ->
                 ps.setInt(1, pastDays)

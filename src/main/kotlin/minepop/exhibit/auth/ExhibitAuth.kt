@@ -13,6 +13,7 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
 import minepop.exhibit.Crypto
+import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.prod
 import java.util.*
 
@@ -27,8 +28,8 @@ fun Authentication.Configuration.installExhibitAuth() {
 
             request.cookies["Quick-Auth"]?.let {
                 dao.retrieveUserForQuickAuth(it)?.let {
-                    userName ->
-                    sessions.set(ExhibitSession(userName, request.headers["timezone"]!!))
+                    user ->
+                    sessions.set(ExhibitSession(user.id, user.name, request.headers["timezone"]!!))
                     return@validate UserIdPrincipal(credentials.name)
                 }
             }
@@ -40,7 +41,7 @@ fun Authentication.Configuration.installExhibitAuth() {
 
             val digest = Crypto.hash(credentials.password.toCharArray(), user.salt)
             if (digest.contentEquals(user.saltedHash)) {
-                sessions.set(ExhibitSession(credentials.name, request.headers["timezone"]!!))
+                sessions.set(ExhibitSession(user.id, user.name, request.headers["timezone"]!!))
                 val quickAuthKey = UUID.randomUUID().toString()
 
                 response.cookies.append("Quick-Auth", quickAuthKey, maxAge = 2000000000, secure = prod, httpOnly = true)
@@ -55,17 +56,16 @@ fun Authentication.Configuration.installExhibitAuth() {
     }
 }
 
+val groupDAO = GroupDAO()
+
+data class LoginResponse(val user: LoginResponseUser)
+data class LoginResponseUser(val name: String, val groups: List<String>)
+
 fun Route.loginRoute() {
     post("login") {
-        val userName = call.sessions.get<ExhibitSession>()?.username
-        if (userName != null) {
-            val body = JsonObject()
-            val user = JsonObject()
-            body.add("user", user)
-            user.addProperty("name", userName)
-            call.respond(body)
-        } else {
-            call.respond(HttpStatusCode.BadRequest)
-        }
+        val userName = exhibitSession().username
+        val groups = groupDAO.retrieveGroups(userName);
+        val user = LoginResponseUser(userName, groups)
+        call.respond(LoginResponse(user))
     }
 }

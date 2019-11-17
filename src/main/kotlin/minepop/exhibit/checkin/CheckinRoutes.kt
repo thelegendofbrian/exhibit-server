@@ -47,7 +47,7 @@ fun Route.checkinRoutes() {
 
         post("/{groupName}") {
             val groupName = call.parameters["groupName"]!!
-            val date = checkinDAO.createCheckin(exhibitSession().username, groupName, exhibitSession().timezone)
+            val date = checkinDAO.createCheckin(exhibitSession().userid, groupName, exhibitSession().timezone)
             val body = JsonObject()
             body.addProperty("date", date.time)
             call.respond(body);

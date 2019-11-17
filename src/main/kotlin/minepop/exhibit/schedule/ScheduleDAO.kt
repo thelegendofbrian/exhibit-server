@@ -10,7 +10,8 @@ class ScheduleDAO: DAO() {
     fun createUpdateSchedule(schedule: Schedule) {
         connect().use { c ->
 
-            c.prepareStatement("delete from schedule where user_name = ? and group_name = ?").use {
+            c.prepareStatement("delete from schedule where user_id = (select id from user where name = ?)" +
+                    " and group_id = (select id from group where name = ?)").use {
                 it.setString(1, schedule.userName)
                 it.setString(2, schedule.groupName)
                 it.executeUpdate()
@@ -26,7 +27,10 @@ class ScheduleDAO: DAO() {
             }
 
             var scheduleId: Int? = null
-            c.prepareStatement("insert into schedule(user_name, group_name, schedule_type_id) values(?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
+            c.prepareStatement("insert into schedule(user_id, group_id, schedule_type_id)" +
+                    " values((select id from user where name = ?)), (select id from group where name = ?), ?)",
+                PreparedStatement.RETURN_GENERATED_KEYS).use {
+
                 it.setString(1, schedule.userName)
                 it.setString(2, schedule.groupName)
                 it.setInt(3, scheduleTypeId!!)
@@ -60,7 +64,8 @@ class ScheduleDAO: DAO() {
 
             var scheduleId: Int? = null
 
-            c.prepareStatement("select id from schedule where user_name = ? and group_name = ?").use {
+            c.prepareStatement("select id from schedule where user_id = (select id from user where name = ?)" +
+                    " and group_id = (select id from group where name = ?)").use {
                 it.setString(1, userName)
                 it.setString(2, groupName)
                 val rs = it.executeQuery()
