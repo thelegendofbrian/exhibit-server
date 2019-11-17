@@ -16,7 +16,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
 import minepop.exhibit.auth.ExhibitSession
 import minepop.exhibit.auth.installExhibitAuth
-import minepop.exhibit.auth.loginRoute
+import minepop.exhibit.auth.authRoutes
 import minepop.exhibit.checkin.checkinRoutes
 import minepop.exhibit.schedule.scheduleRoutes
 
@@ -65,7 +65,7 @@ fun Application.module(testing: Boolean = false) {
         corsRouting()
 
         authenticate("Form") {
-            loginRoute()
+            authRoutes()
             checkinRoutes()
             scheduleRoutes()
         }

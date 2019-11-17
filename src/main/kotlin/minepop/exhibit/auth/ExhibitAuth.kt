@@ -8,7 +8,9 @@ import io.ktor.auth.form
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
+import io.ktor.sessions.clear
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
@@ -61,11 +63,16 @@ val groupDAO = GroupDAO()
 data class LoginResponse(val user: LoginResponseUser)
 data class LoginResponseUser(val name: String, val groups: List<String>)
 
-fun Route.loginRoute() {
+fun Route.authRoutes() {
     post("login") {
         val userName = exhibitSession().username
         val groups = groupDAO.retrieveGroups(userName);
         val user = LoginResponseUser(userName, groups)
         call.respond(LoginResponse(user))
+    }
+    get("logout") {
+        this.call.sessions.clear<ExhibitSession>()
+        this.call.response.cookies.appendExpired("Quick-Auth")
+        call.respond(HttpStatusCode.NoContent)
     }
 }
