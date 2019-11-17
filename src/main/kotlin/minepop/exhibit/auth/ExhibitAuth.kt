@@ -1,13 +1,18 @@
 package minepop.exhibit.auth
 
+import com.google.gson.JsonObject
+import io.ktor.application.call
 import io.ktor.auth.Authentication
 import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.form
+import io.ktor.http.HttpStatusCode
+import io.ktor.response.respond
+import io.ktor.routing.Route
+import io.ktor.routing.post
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
 import minepop.exhibit.Crypto
-import minepop.exhibit.ExhibitSession
 import minepop.exhibit.prod
 import java.util.*
 
@@ -46,6 +51,21 @@ fun Authentication.Configuration.installExhibitAuth() {
             else {
                 return@validate null
             }
+        }
+    }
+}
+
+fun Route.loginRoute() {
+    post("login") {
+        val userName = call.sessions.get<ExhibitSession>()?.username
+        if (userName != null) {
+            val body = JsonObject()
+            val user = JsonObject()
+            body.add("user", user)
+            user.addProperty("name", userName)
+            call.respond(body)
+        } else {
+            call.respond(HttpStatusCode.BadRequest)
         }
     }
 }

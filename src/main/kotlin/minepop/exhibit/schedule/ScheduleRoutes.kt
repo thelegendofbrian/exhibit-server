@@ -8,16 +8,14 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import io.ktor.sessions.get
-import io.ktor.sessions.sessions
-import minepop.exhibit.ExhibitSession
+import minepop.exhibit.auth.exhibitSession
 
 val scheduleDAO = ScheduleDAO()
 
 fun Route.scheduleRoutes() {
     route("schedule") {
         post("/") {
-            val userName = call.sessions.get<ExhibitSession>()!!.username
+            val userName = exhibitSession().username
             val groupName = "Japanese"
             val body = call.receive<JsonObject>()
 
@@ -36,7 +34,7 @@ fun Route.scheduleRoutes() {
         }
 
         get("/{groupName}") {
-            val userName = call.sessions.get<ExhibitSession>()!!.username
+            val userName = exhibitSession().username
             val groupName = call.parameters["groupName"]!!
             val schedule = scheduleDAO.retrieveSchedule(userName, groupName)
             call.respond(schedule)

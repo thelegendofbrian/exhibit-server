@@ -8,8 +8,7 @@ class ScheduleDAO: DAO() {
 
     @Throws(SQLException::class)
     fun createUpdateSchedule(schedule: Schedule) {
-        connect().use {
-            c ->
+        connect().use { c ->
 
             c.prepareStatement("delete from schedule where user_name = ? and group_name = ?").use {
                 it.setString(1, schedule.userName)
@@ -36,8 +35,7 @@ class ScheduleDAO: DAO() {
             }
 
             when (schedule) {
-                is WeeklySchedule -> schedule.days!!.forEach {
-                    day ->
+                is WeeklySchedule -> schedule.days.forEach { day ->
                     c.prepareStatement("insert into schedule_weekly(id, day_of_week_id) values(?, (select id from day_of_week where day = ?))").use {
                         it.setInt(1, scheduleId!!)
                         it.setString(2, day)
@@ -58,8 +56,7 @@ class ScheduleDAO: DAO() {
     @Throws(SQLException::class)
     fun retrieveSchedule(userName: String, groupName: String): Schedule {
         var schedule: Schedule? = null
-        connect().use {
-            c ->
+        connect().use { c ->
 
             var scheduleId: Int? = null
 

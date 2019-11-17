@@ -7,8 +7,7 @@ class SessionAuthDAO : DAO() {
 
     @Throws(SQLException::class)
     fun retrieveUser(userName: String): User? {
-        connect().use {
-            c ->
+        connect().use { c ->
             c.prepareStatement("select failed_logins, salt, salted_hash from user where user_name = ?").use {
                 it.setString(1, userName)
                 val rs = it.executeQuery()
@@ -22,8 +21,7 @@ class SessionAuthDAO : DAO() {
 
     @Throws(SQLException::class)
     fun updateUser(user: User) {
-        connect().use {
-            c ->
+        connect().use { c ->
             c.prepareStatement("update user set failed_logins = ?, salt = ?, salted_hash = ? where user_name = ?").use {
                 it.setInt(1, user.failedLogins)
                 it.setBytes(2, user.salt)
@@ -36,8 +34,7 @@ class SessionAuthDAO : DAO() {
 
     @Throws(SQLException::class)
     fun createQuickAuth(user: User, authKey: String) {
-        connect().use {
-            c ->
+        connect().use { c ->
             c.prepareStatement("insert into quick_auth(user_name, auth_key) values (?, ?)").use {
                 it.setString(1, user.userName)
                 it.setString(2, authKey)
@@ -65,8 +62,7 @@ class SessionAuthDAO : DAO() {
     @Throws(SQLException::class)
     fun retrieveUserForQuickAuth(authKey: String): String? {
         var userName: String? = null
-        connect().use {
-            c ->
+        connect().use { c ->
             c.prepareStatement("select user_name from quick_auth where auth_key = ?").use {
                 it.setString(1, authKey)
                 val rs = it.executeQuery()

@@ -1,24 +1,22 @@
 package minepop.exhibit
 
-import com.google.gson.JsonObject
 import java.nio.file.Paths
 import java.nio.file.Files
 
 import io.ktor.application.*
 import io.ktor.auth.*
-import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.gson.*
 import io.ktor.features.*
-import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.*
 import io.ktor.server.engine.applicationEngineEnvironment
 import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.sessions.*
-import io.ktor.util.pipeline.PipelineContext
+import minepop.exhibit.auth.ExhibitSession
 import minepop.exhibit.auth.installExhibitAuth
+import minepop.exhibit.auth.loginRoute
 import minepop.exhibit.checkin.checkinRoutes
 import minepop.exhibit.schedule.scheduleRoutes
 
@@ -42,12 +40,6 @@ fun main(args: Array<String>) {
     }
 }
 
-data class ExhibitSession(val username: String, val timezone: String)
-
-fun PipelineContext<Unit, ApplicationCall>.exhibitSession(): ExhibitSession {
-    return this.call.sessions.get<ExhibitSession>()!!
-}
-
 fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation) {
         gson {
@@ -64,41 +56,16 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
-        if (!prod) {
-            options("/*") {
-                call.request.headers["Access-Control-Request-Method"]?.let {
-                    call.response.header("Access-Control-Allow-Methods", it)
-                }
-                call.respond(HttpStatusCode.OK)
-            }
-        }
 
         static("/") {
             files("public")
             default("public/index.html")
         }
 
-        intercept(ApplicationCallPipeline.Features) {
-            call.response.headers.append("Access-Control-Allow-Origin", if (prod) "https://${conf.getHost()}" else "http://localhost:${conf.getOriginPort()}")
-            if (!prod) {
-                call.response.headers.append("Access-Control-Allow-Credentials", "true")
-                call.response.headers.append("Access-Control-Allow-Headers", "timezone")
-            }
-        }
+        corsRouting()
 
         authenticate("Form") {
-            post("login") {
-                val userName = call.sessions.get<ExhibitSession>()?.username
-                if (userName != null) {
-                    val body = JsonObject()
-                    val user = JsonObject()
-                    body.add("user", user)
-                    user.addProperty("name", userName)
-                    call.respond(body)
-                } else {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
+            loginRoute()
             checkinRoutes()
             scheduleRoutes()
         }

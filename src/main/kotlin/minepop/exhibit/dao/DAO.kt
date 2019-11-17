@@ -11,11 +11,7 @@ abstract class DAO {
 
     @Throws(SQLException::class)
     protected fun connect(): ConnectionWrapper {
-        try {
-            return connectionPool.take()
-        } catch (ex: InterruptedException) {
-            throw SQLException(ex)
-        }
+        return connectionPool.take()
     }
 
     class ConnectionWrapper(private val connection: Connection) : Closeable {
@@ -41,22 +37,14 @@ abstract class DAO {
         private val connectionPool = ArrayBlockingQueue<ConnectionWrapper>(conf.getConnectionPool())
 
         init {
-            try {
-                for (i in 0 until conf.getConnectionPool())
-                    connectionPool.offer(
-                        ConnectionWrapper(
-                            connect0()
-                        )
-                    )
-            } catch (ex: SQLException) {
-                throw RuntimeException(ex)
-            }
+            for (i in 0 until conf.getConnectionPool())
+                connectionPool.offer(ConnectionWrapper(connect0()))
         }
 
         @Throws(SQLException::class)
         private fun connect0(): Connection {
             val connectionString =
-                String.format("jdbc:mysql://%s:%d/%s", conf.getHost(), conf.getPort(), conf.getSchema())
+                String.format("jdbc:mysql://%s:%d/%s?autoReconnect=true", conf.getHost(), conf.getPort(), conf.getSchema())
             return DriverManager.getConnection(connectionString, conf.getUser(), conf.getPasswd())
         }
     }

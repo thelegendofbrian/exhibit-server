@@ -8,7 +8,7 @@ import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
-import minepop.exhibit.exhibitSession
+import minepop.exhibit.auth.exhibitSession
 
 val checkinDAO = CheckinDAO()
 
@@ -30,7 +30,7 @@ fun Route.checkinRoutes() {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
             val groupName = call.parameters["groupName"]!!
             if (pastDays != null) {
-                val checkins = checkinDAO.retrieveCheckins(exhibitSession().username, groupName, exhibitSession().timezone, pastDays)
+                val checkins = checkinDAO.retrieveCheckins(groupName, exhibitSession().timezone, pastDays, exhibitSession().username)
                 if (pastDays == 1) {
                     if (checkins.isEmpty()) {
                         call.respond(HttpStatusCode.NoContent)
