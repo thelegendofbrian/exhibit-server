@@ -6,7 +6,7 @@ import java.sql.SQLException
 class SessionAuthDAO : DAO() {
 
     @Throws(SQLException::class)
-    fun retrieveUser(name: String? = null, id: Long? = null): User? {
+    fun retrieveUser(name: String? = null, id: Long? = null): AuthUser? {
         connect().use { c ->
             c.prepareStatement("select id, name, failed_logins, salt, salted_hash from user where" +
                     " ${if (name == null) "id" else "name"} = ?").use {
@@ -17,7 +17,7 @@ class SessionAuthDAO : DAO() {
                 }
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    return User(rs.getLong(1), rs.getString(2),
+                    return AuthUser(rs.getLong(1), rs.getString(2),
                         rs.getInt(3), rs.getBytes(4), rs.getBytes(5))
                 }
             }
@@ -26,7 +26,7 @@ class SessionAuthDAO : DAO() {
     }
 
     @Throws(SQLException::class)
-    fun updateUser(user: User) {
+    fun updateUser(user: AuthUser) {
         connect().use { c ->
             c.prepareStatement("update user set failed_logins = ?, salt = ?, salted_hash = ? where name = ?").use {
                 it.setInt(1, user.failedLogins)
@@ -39,7 +39,7 @@ class SessionAuthDAO : DAO() {
     }
 
     @Throws(SQLException::class)
-    fun createQuickAuth(user: User, authKey: String) {
+    fun createQuickAuth(user: AuthUser, authKey: String) {
         connect().use { c ->
             c.prepareStatement("insert into quick_auth(user_id, auth_key) values (?, ?)").use {
                 it.setLong(1, user.id)
@@ -66,7 +66,7 @@ class SessionAuthDAO : DAO() {
     }
 
     @Throws(SQLException::class)
-    fun retrieveUserForQuickAuth(authKey: String): User? {
+    fun retrieveUserForQuickAuth(authKey: String): AuthUser? {
         var id: Long? = null
         connect().use { c ->
             c.prepareStatement("select user_id from quick_auth where auth_key = ?").use {

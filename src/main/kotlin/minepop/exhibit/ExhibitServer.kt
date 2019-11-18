@@ -18,6 +18,7 @@ import minepop.exhibit.auth.ExhibitSession
 import minepop.exhibit.auth.installExhibitAuth
 import minepop.exhibit.auth.authRoutes
 import minepop.exhibit.checkin.checkinRoutes
+import minepop.exhibit.group.groupRoutes
 import minepop.exhibit.schedule.scheduleRoutes
 
 val conf = AppConfig()
@@ -28,9 +29,7 @@ fun main(args: Array<String>) {
         io.ktor.server.netty.EngineMain.main(args)
     } else {
         val env = applicationEngineEnvironment {
-            module {
-                module()
-            }
+            module { module() }
             connector {
                 host = "0.0.0.0"
                 port = conf.getPort()
@@ -68,6 +67,7 @@ fun Application.module(testing: Boolean = false) {
             authRoutes()
             checkinRoutes()
             scheduleRoutes()
+            groupRoutes()
         }
     }
 }

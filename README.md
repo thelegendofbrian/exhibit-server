@@ -18,7 +18,9 @@ create table exhibit.quick_auth(
 
 create table exhibit.`group`(
     id bigint primary key auto_increment,
-    name varchar(16) not null
+    name varchar(16) not null,
+    owner_user_id bigint not null,
+    foreign key (owner_user_id) references user(id) on delete cascade
 );
 
 create table exhibit.group_member(

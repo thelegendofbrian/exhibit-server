@@ -1,6 +1,5 @@
 package minepop.exhibit.auth
 
-import com.google.gson.JsonObject
 import io.ktor.application.call
 import io.ktor.auth.Authentication
 import io.ktor.auth.UserIdPrincipal
@@ -8,13 +7,13 @@ import io.ktor.auth.form
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
-import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.sessions.clear
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
 import minepop.exhibit.Crypto
+import minepop.exhibit.group.Group
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.prod
 import java.util.*
@@ -61,7 +60,7 @@ fun Authentication.Configuration.installExhibitAuth() {
 val groupDAO = GroupDAO()
 
 data class LoginResponse(val user: LoginResponseUser)
-data class LoginResponseUser(val name: String, val groups: List<String>)
+data class LoginResponseUser(val name: String, val groups: List<Group>)
 
 fun Route.authRoutes() {
     post("login") {
@@ -70,9 +69,9 @@ fun Route.authRoutes() {
         val user = LoginResponseUser(userName, groups)
         call.respond(LoginResponse(user))
     }
-    get("logout") {
-        this.call.sessions.clear<ExhibitSession>()
-        this.call.response.cookies.appendExpired("Quick-Auth")
+    post("logout") {
+        call.sessions.clear<ExhibitSession>()
+        call.response.cookies.appendExpired("Quick-Auth")
         call.respond(HttpStatusCode.NoContent)
     }
 }

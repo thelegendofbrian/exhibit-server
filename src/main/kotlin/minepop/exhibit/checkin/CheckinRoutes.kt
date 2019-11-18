@@ -15,22 +15,22 @@ val checkinDAO = CheckinDAO()
 fun Route.checkinRoutes() {
     route("checkin") {
 
-        get("/{groupName}") {
+        get("/{groupId}") {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
-            val groupName = call.parameters["groupName"]!!
+            val groupId = call.parameters["groupId"]!!.toLong()
             if (pastDays != null) {
-                val checkins = checkinDAO.retrieveCheckins(groupName, exhibitSession().timezone, pastDays)
+                val checkins = checkinDAO.retrieveCheckins(groupId, exhibitSession().timezone, pastDays)
                 call.respond(checkins)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
             }
         }
 
-        get("/{groupName}/@me") {
+        get("/{groupId}/@me") {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
-            val groupName = call.parameters["groupName"]!!
+            val groupId = call.parameters["groupId"]!!.toLong()
             if (pastDays != null) {
-                val checkins = checkinDAO.retrieveCheckins(groupName, exhibitSession().timezone, pastDays, exhibitSession().username)
+                val checkins = checkinDAO.retrieveCheckins(groupId, exhibitSession().timezone, pastDays, exhibitSession().username)
                 if (pastDays == 1) {
                     if (checkins.isEmpty()) {
                         call.respond(HttpStatusCode.NoContent)
@@ -45,9 +45,9 @@ fun Route.checkinRoutes() {
             }
         }
 
-        post("/{groupName}") {
-            val groupName = call.parameters["groupName"]!!
-            val date = checkinDAO.createCheckin(exhibitSession().userid, groupName, exhibitSession().timezone)
+        post("/{groupId}") {
+            val groupId = call.parameters["groupId"]!!.toLong()
+            val date = checkinDAO.createCheckin(exhibitSession().userid, groupId, exhibitSession().timezone)
             val body = JsonObject()
             body.addProperty("date", date.time)
             call.respond(body);

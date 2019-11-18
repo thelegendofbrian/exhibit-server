@@ -2,7 +2,9 @@ package minepop.exhibit
 
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
+import io.ktor.http.CacheControl
 import io.ktor.http.HttpStatusCode
+import io.ktor.response.cacheControl
 import io.ktor.response.header
 import io.ktor.response.respond
 import io.ktor.routing.Routing
@@ -20,6 +22,7 @@ fun Routing.corsRouting() {
 
     intercept(ApplicationCallPipeline.Features) {
         call.response.headers.append("Access-Control-Allow-Origin", if (prod) "https://${conf.getHost()}" else "http://localhost:${conf.getOriginPort()}")
+        call.response.cacheControl(CacheControl.NoStore(CacheControl.Visibility.Private))
         if (!prod) {
             call.response.headers.append("Access-Control-Allow-Credentials", "true")
             call.response.headers.append("Access-Control-Allow-Headers", "timezone")
