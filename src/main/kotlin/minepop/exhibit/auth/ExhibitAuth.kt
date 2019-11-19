@@ -16,9 +16,12 @@ import minepop.exhibit.Crypto
 import minepop.exhibit.group.Group
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.prod
+import minepop.exhibit.user.UserSettings
+import minepop.exhibit.user.UserSettingsDAO
 import java.util.*
 
 private val dao = SessionAuthDAO()
+private val userSettingsDAO = UserSettingsDAO()
 
 fun Authentication.Configuration.installExhibitAuth() {
     form(name = "Form") {
@@ -27,10 +30,10 @@ fun Authentication.Configuration.installExhibitAuth() {
         skipWhen { it.sessions.get<ExhibitSession>() != null }
         validate { credentials ->
 
+            val timezone = request.headers["timezone"]!!
             request.cookies["Quick-Auth"]?.let {
-                dao.retrieveUserForQuickAuth(it)?.let {
-                    user ->
-                    sessions.set(ExhibitSession(user.id, user.name, request.headers["timezone"]!!))
+                dao.retrieveUserForQuickAuth(it)?.let { user ->
+                    sessions.set(user.newSession())
                     return@validate UserIdPrincipal(credentials.name)
                 }
             }
@@ -40,9 +43,14 @@ fun Authentication.Configuration.installExhibitAuth() {
                 return@validate null
             }
 
+            if (user.userSettings.timezone == null) {
+                user.userSettings.timezone = timezone
+                userSettingsDAO.updateSettings(user.userSettings)
+            }
+
             val digest = Crypto.hash(credentials.password.toCharArray(), user.salt)
             if (digest.contentEquals(user.saltedHash)) {
-                sessions.set(ExhibitSession(user.id, user.name, request.headers["timezone"]!!))
+                sessions.set(user.newSession())
                 val quickAuthKey = UUID.randomUUID().toString()
 
                 response.cookies.append("Quick-Auth", quickAuthKey, maxAge = 2000000000, secure = prod, httpOnly = true)
@@ -60,13 +68,15 @@ fun Authentication.Configuration.installExhibitAuth() {
 val groupDAO = GroupDAO()
 
 data class LoginResponse(val user: LoginResponseUser)
-data class LoginResponseUser(val name: String, val groups: List<Group>)
+data class LoginResponseUser(val name: String, val groups: List<Group>, val settings: LoginResponseUserSettings)
+data class LoginResponseUserSettings(val timezone: String, val defaultGroupId: Long?)
 
 fun Route.authRoutes() {
     post("login") {
         val userName = exhibitSession().username
-        val groups = groupDAO.retrieveGroups(userName);
-        val user = LoginResponseUser(userName, groups)
+        val groups = groupDAO.retrieveGroups(userName)
+        val settings = LoginResponseUserSettings(exhibitSession().timezone, exhibitSession().defaultGroupId)
+        val user = LoginResponseUser(userName, groups, settings)
         call.respond(LoginResponse(user))
     }
     post("logout") {

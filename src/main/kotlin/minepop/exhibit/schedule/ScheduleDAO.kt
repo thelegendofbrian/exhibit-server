@@ -6,7 +6,6 @@ import java.sql.SQLException
 
 class ScheduleDAO: DAO() {
 
-    @Throws(SQLException::class)
     fun createUpdateSchedule(schedule: Schedule) {
         connect().use { c ->
 
@@ -57,7 +56,6 @@ class ScheduleDAO: DAO() {
         }
     }
 
-    @Throws(SQLException::class)
     fun retrieveSchedule(userName: String, groupName: String): Schedule {
         var schedule: Schedule? = null
         connect().use { c ->

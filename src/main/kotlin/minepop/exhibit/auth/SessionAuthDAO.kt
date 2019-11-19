@@ -1,15 +1,16 @@
 package minepop.exhibit.auth
 
 import minepop.exhibit.dao.DAO
+import minepop.exhibit.user.UserSettings
 import java.sql.SQLException
 
 class SessionAuthDAO : DAO() {
 
-    @Throws(SQLException::class)
     fun retrieveUser(name: String? = null, id: Long? = null): AuthUser? {
         connect().use { c ->
-            c.prepareStatement("select id, name, failed_logins, salt, salted_hash from user where" +
-                    " ${if (name == null) "id" else "name"} = ?").use {
+            c.prepareStatement("select id, name, failed_logins, salt, salted_hash, timezone, default_group_id, display_name from user" +
+                    " inner join user_settings on user.id = user_id" +
+                    " where ${if (name == null) "id" else "name"} = ?").use {
                 if (name == null) {
                     it.setLong(1, id!!)
                 } else {
@@ -17,15 +18,21 @@ class SessionAuthDAO : DAO() {
                 }
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    return AuthUser(rs.getLong(1), rs.getString(2),
-                        rs.getInt(3), rs.getBytes(4), rs.getBytes(5))
+                    val userId = rs.getLong(1)
+                    var defaultGroupId: Long? = rs.getLong(7)
+                    if (rs.wasNull()) {
+                        defaultGroupId = null
+                    }
+                    return AuthUser(userId, rs.getString(2),
+                        rs.getInt(3), rs.getBytes(4), rs.getBytes(5),
+                        UserSettings(userId, rs.getString(6), defaultGroupId, rs.getString(7))
+                    )
                 }
             }
         }
         return null
     }
 
-    @Throws(SQLException::class)
     fun updateUser(user: AuthUser) {
         connect().use { c ->
             c.prepareStatement("update user set failed_logins = ?, salt = ?, salted_hash = ? where name = ?").use {
@@ -38,7 +45,6 @@ class SessionAuthDAO : DAO() {
         }
     }
 
-    @Throws(SQLException::class)
     fun createQuickAuth(user: AuthUser, authKey: String) {
         connect().use { c ->
             c.prepareStatement("insert into quick_auth(user_id, auth_key) values (?, ?)").use {
@@ -65,7 +71,6 @@ class SessionAuthDAO : DAO() {
         }
     }
 
-    @Throws(SQLException::class)
     fun retrieveUserForQuickAuth(authKey: String): AuthUser? {
         var id: Long? = null
         connect().use { c ->

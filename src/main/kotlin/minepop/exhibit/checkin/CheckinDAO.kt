@@ -8,7 +8,6 @@ import java.time.ZoneId
 
 class CheckinDAO : DAO() {
 
-    @Throws(SQLException::class)
     fun createCheckin(userId: Long, groupId: Long, timeZone: String): Date {
         val date = Date.valueOf(LocalDate.now(ZoneId.of(timeZone)))
         connect().use { c ->
@@ -22,7 +21,6 @@ class CheckinDAO : DAO() {
         return date
     }
 
-    @Throws(SQLException::class)
     fun retrieveCheckins(groupId: Long, timeZone: String, pastDays: Int, userName: String? = null): List<Checkin> {
         val checkins = mutableListOf<Checkin>()
         val date = Date.valueOf(LocalDate.now(ZoneId.of(timeZone)))

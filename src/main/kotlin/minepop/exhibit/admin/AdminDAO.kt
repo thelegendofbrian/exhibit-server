@@ -1,23 +1,30 @@
 package minepop.exhibit.admin
 
 import minepop.exhibit.dao.DAO
+import java.sql.PreparedStatement
 import java.sql.SQLException
 
 class AdminDAO: DAO() {
 
-    @Throws(SQLException::class)
 	fun createUser(userName: String, salt: ByteArray, saltedHash: ByteArray) {
         connect().use { c ->
-            c.prepareStatement("insert into user(name, salt, salted_hash) values (?, ?, ?)").use {
+            var userId: Long? = null
+            c.prepareStatement("insert into user(name, salt, salted_hash) values (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
                 it.setString(1, userName)
                 it.setBytes(2, salt)
                 it.setBytes(3, saltedHash)
                 it.executeUpdate()
+                var keys = it.generatedKeys
+                if (keys.next()) {
+                    userId = keys.getLong(1)
+                }
+            }
+            c.prepareStatement("insert into user_settings(user_id) values(?)").use {
+                it.setLong(1, userId!!)
             }
         }
 	}
 
-    @Throws(SQLException::class)
 	fun updateUserCredentials(userName: String, salt: ByteArray, saltedHash: ByteArray) {
         connect().use { c ->
             c.prepareStatement("update user set salt = ?, salted_hash = ? where name = ?").use {
@@ -29,7 +36,6 @@ class AdminDAO: DAO() {
         }
 	}
 
-    @Throws(SQLException::class)
 	fun updateUserFailedLogins(userName: String, failedLogins: Int) {
         connect().use { c ->
             c.prepareStatement("update user set failed_logins = ? where name = ?").use {
@@ -40,7 +46,6 @@ class AdminDAO: DAO() {
         }
 	}
 
-    @Throws(SQLException::class)
 	fun deleteUser(userName: String) {
         connect().use { c ->
             c.prepareStatement("delete from user where name = ?").use {

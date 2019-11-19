@@ -74,6 +74,15 @@ create table exhibit.schedule_interval(
     foreign key (schedule_id) references schedule(id) on delete cascade
 );
 
+create table exhibit.user_settings(
+    user_id bigint primary key,
+    timezone varchar(16),
+    default_group_id bigint,
+    display_name varchar(16),
+    foreign key (user_id) references user(id) on delete cascade,
+    foreign key (default_group_id) references `group`(id) on delete set null
+);
+
 insert into exhibit.day_of_week(day) values
 ('Monday'),
 ('Tuesday'),

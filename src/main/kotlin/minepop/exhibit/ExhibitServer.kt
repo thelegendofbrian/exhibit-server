@@ -20,6 +20,7 @@ import minepop.exhibit.auth.authRoutes
 import minepop.exhibit.checkin.checkinRoutes
 import minepop.exhibit.group.groupRoutes
 import minepop.exhibit.schedule.scheduleRoutes
+import minepop.exhibit.user.userRoutes
 
 val conf = AppConfig()
 val prod = Files.exists(Paths.get(conf.getKeystorePath()))
@@ -68,6 +69,7 @@ fun Application.module(testing: Boolean = false) {
             checkinRoutes()
             scheduleRoutes()
             groupRoutes()
+            userRoutes()
         }
     }
 }
