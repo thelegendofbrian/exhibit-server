@@ -17,7 +17,7 @@ fun PipelineContext<Unit, ApplicationCall>.exhibitSession(): ExhibitSession {
 }
 
 fun ExhibitSession.currentDate(): Date {
-    return Date.valueOf(LocalDate.now(ZoneId.of(timezone)))
+    return Date.valueOf(now())
 }
 
 fun ExhibitSession.now(): LocalDate {

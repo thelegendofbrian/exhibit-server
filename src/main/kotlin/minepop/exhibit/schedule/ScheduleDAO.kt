@@ -53,7 +53,7 @@ class ScheduleDAO: DAO() {
         }
     }
 
-    fun retrieveSchedule(groupMemberId: Long, date: Date): Schedule {
+    fun retrieveSchedule(groupMemberId: Long, date: Date): Schedule? {
         var schedule: Schedule? = null
         connect().use { c ->
 
@@ -67,6 +67,8 @@ class ScheduleDAO: DAO() {
                 if (rs.next()) {
                     scheduleId = rs.getInt(1)
                     startDate = rs.getDate(2)
+                } else {
+                    return null
                 }
             }
 

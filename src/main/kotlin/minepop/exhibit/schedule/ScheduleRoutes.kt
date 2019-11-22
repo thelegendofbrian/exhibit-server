@@ -48,7 +48,7 @@ fun Route.scheduleRoutes() {
             val groupId = call.parameters["groupId"]!!.toLong()
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
             val schedule = scheduleDAO.retrieveSchedule(groupMemberId, exhibitSession().currentDate())
-            call.respond(schedule)
+            call.respond(schedule!!)
         }
     }
 }

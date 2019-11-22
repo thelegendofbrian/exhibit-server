@@ -27,6 +27,7 @@ create table exhibit.group_member(
     id bigint primary key auto_increment,
     group_id bigint not null,
     user_id bigint not null,
+    unique key(group_id, user_id),
     foreign key (group_id) references `group`(id) on delete cascade,
     foreign key (user_id) references user(id) on delete cascade
 );

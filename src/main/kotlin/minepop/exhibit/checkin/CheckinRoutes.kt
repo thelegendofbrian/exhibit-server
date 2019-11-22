@@ -12,9 +12,8 @@ import minepop.exhibit.auth.currentDate
 import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
-import minepop.exhibit.schedule.IntervalSchedule
 import minepop.exhibit.schedule.ScheduleDAO
-import minepop.exhibit.schedule.WeeklySchedule
+import minepop.exhibit.schedule.newStats
 import minepop.exhibit.stats.StatsDAO
 import java.sql.Date
 
@@ -65,54 +64,19 @@ fun Route.checkinRoutes() {
 
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
             val schedule = scheduleDAO.retrieveSchedule(groupMemberId, date)
-            val lastCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)!!.date.toLocalDate()
+            var lastCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)?.date?.toLocalDate()
+            val stats = schedule.newStats()
 
-            // determine if streak is broken
-            var isStreakBroken = false // p sure this value never used
-            var isBonus = false // p sure this value never used
-            var missedCheckins = 0
-            when (schedule) {
-                is WeeklySchedule -> {
-                    // go backwards through scheduled weekdays from today, until day matches last checkin
-                    for (i in 1..7) {
-                        val weekDay = now.dayOfWeek.value - i
-                        if (schedule.days.contains(weekDay)) {
-                            isStreakBroken = now.minusDays(i.toLong()) != lastCheckin
-                            break
-                        }
-                    }
-                    isBonus = schedule.days.contains(now.dayOfWeek.value)
-
-                    var weekDay = lastCheckin
-                    while (weekDay < now) {
-                        weekDay = weekDay.plusDays(1)
-                        if (schedule.days.contains(weekDay.dayOfWeek.value)) {
-                            missedCheckins++
-                        }
-                    }
-                }
-                is IntervalSchedule -> {
-                    // this could perform poorly
-                    var intervalDay = schedule.startDate.toLocalDate()
-                    val interval = schedule.days!!.toLong()
-                    while (intervalDay <= lastCheckin) {
-                        intervalDay = intervalDay.plusDays(interval)
-                    }
-                    isStreakBroken = lastCheckin != intervalDay
-                    while (intervalDay <= now) {
-                        intervalDay = intervalDay.plusDays(interval)
-                        // 1 iteration forward means it is the very next scheduled checkin
-                        missedCheckins++
-                    }
-                    isBonus = now != intervalDay
-                    missedCheckins--
-                }
+            if (schedule != null) {
+                if (lastCheckin == null)
+                    lastCheckin = schedule.startDate.toLocalDate().minusDays(1)
+                schedule.calculateStats(stats, now, lastCheckin!!)
             }
 
-            statsDAO.updateStats(groupMemberId, isStreakBroken, isBonus, missedCheckins)
-            checkinDAO.createCheckin(groupMemberId, date, isBonus)
+            statsDAO.updateStats(stats)
+            checkinDAO.createCheckin(groupMemberId, date, stats.isBonusCheckin)
             val body = JsonObject()
-            body.addProperty("date", date.time)
+            body.addProperty("date", date.toString())
             call.respond(body)
         }
     }
