@@ -26,5 +26,17 @@ fun Route.groupRoutes() {
             groupDAO.deleteGroup(call.request.queryParameters["groupId"]!!.toLong())
             call.respond(HttpStatusCode.NoContent)
         }
+        route("member/{groupId}") {
+            post("/") {
+                val groupId = call.parameters["groupId"]!!.toLong()
+                groupDAO.createGroupMember(groupId, exhibitSession().userid)
+                call.respond(HttpStatusCode.NoContent)
+            }
+            delete("/") {
+                val groupId = call.parameters["groupId"]!!.toLong()
+                groupDAO.deleteGroupMember(groupId, exhibitSession().userid)
+                call.respond(HttpStatusCode.NoContent)
+            }
+        }
     }
 }

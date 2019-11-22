@@ -73,10 +73,9 @@ data class LoginResponseUserSettings(val timezone: String, val defaultGroupId: L
 
 fun Route.authRoutes() {
     post("login") {
-        val userName = exhibitSession().username
-        val groups = groupDAO.retrieveGroups(userName)
+        val groups = groupDAO.retrieveGroups(exhibitSession().userid)
         val settings = LoginResponseUserSettings(exhibitSession().timezone, exhibitSession().defaultGroupId)
-        val user = LoginResponseUser(userName, groups, settings)
+        val user = LoginResponseUser(exhibitSession().username, groups, settings)
         call.respond(LoginResponse(user))
     }
     post("logout") {

@@ -1,18 +1,16 @@
 package minepop.exhibit.schedule
 
 import minepop.exhibit.dao.DAO
+import java.sql.Date
 import java.sql.PreparedStatement
-import java.sql.SQLException
 
 class ScheduleDAO: DAO() {
 
     fun createUpdateSchedule(schedule: Schedule) {
         connect().use { c ->
 
-            c.prepareStatement("delete from schedule where user_id = (select id from user where name = ?)" +
-                    " and group_id = (select id from group where name = ?)").use {
-                it.setString(1, schedule.userName)
-                it.setString(2, schedule.groupName)
+            c.prepareStatement("delete from schedule where group_member_id = ?").use {
+                it.setLong(1, schedule.groupMemberId)
                 it.executeUpdate()
             }
 
@@ -26,22 +24,21 @@ class ScheduleDAO: DAO() {
             }
 
             var scheduleId: Int? = null
-            c.prepareStatement("insert into schedule(user_id, group_id, schedule_type_id)" +
-                    " values((select id from user where name = ?)), (select id from group where name = ?), ?)",
+            c.prepareStatement("insert into schedule(groupMemberId, schedule_type_id, start_date) values(?, ?, ?)",
                 PreparedStatement.RETURN_GENERATED_KEYS).use {
 
-                it.setString(1, schedule.userName)
-                it.setString(2, schedule.groupName)
-                it.setInt(3, scheduleTypeId!!)
+                it.setLong(1, schedule.groupMemberId)
+                it.setInt(2, scheduleTypeId!!)
+                it.setDate(3, schedule.startDate)
                 it.executeUpdate()
                 scheduleId =  it.generatedKeys.getInt(1)
             }
 
             when (schedule) {
                 is WeeklySchedule -> schedule.days.forEach { day ->
-                    c.prepareStatement("insert into schedule_weekly(id, day_of_week_id) values(?, (select id from day_of_week where day = ?))").use {
+                    c.prepareStatement("insert into schedule_weekly(id, day_of_week_id) values(?, ?)").use {
                         it.setInt(1, scheduleId!!)
-                        it.setString(2, day)
+                        it.setInt(2, day)
                         it.executeUpdate()
                     }
                 }
@@ -56,19 +53,20 @@ class ScheduleDAO: DAO() {
         }
     }
 
-    fun retrieveSchedule(userName: String, groupName: String): Schedule {
+    fun retrieveSchedule(groupMemberId: Long, date: Date): Schedule {
         var schedule: Schedule? = null
         connect().use { c ->
 
             var scheduleId: Int? = null
+            var startDate: Date? = null
 
-            c.prepareStatement("select id from schedule where user_id = (select id from user where name = ?)" +
-                    " and group_id = (select id from group where name = ?)").use {
-                it.setString(1, userName)
-                it.setString(2, groupName)
+            c.prepareStatement("select id, start_date from schedule where group_member_id = ? and start_date < ? order by start_date desc limit 1").use {
+                it.setLong(1, groupMemberId)
+                it.setDate(2, date)
                 val rs = it.executeQuery()
                 if (rs.next()) {
                     scheduleId = rs.getInt(1)
+                    startDate = rs.getDate(2)
                 }
             }
 
@@ -76,7 +74,7 @@ class ScheduleDAO: DAO() {
                 it.setInt(1, scheduleId!!)
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    schedule = if (rs.getString(1) == "Weekly") WeeklySchedule(userName, groupName) else IntervalSchedule(userName, groupName)
+                    schedule = if (rs.getString(1) == "Weekly") WeeklySchedule(groupMemberId, startDate!!) else IntervalSchedule(groupMemberId, startDate!!)
                 }
             }
 
@@ -86,7 +84,7 @@ class ScheduleDAO: DAO() {
                         it.setInt(1, scheduleId!!)
                         val rs = it.executeQuery()
                         while (rs.next()) {
-                            (schedule as WeeklySchedule).days += rs.getString(1)
+                            (schedule as WeeklySchedule).days += rs.getInt(1)
                         }
                     }
                 }

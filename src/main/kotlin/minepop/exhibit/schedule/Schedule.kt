@@ -1,14 +1,16 @@
 package minepop.exhibit.schedule
 
-open class Schedule(userName: String, groupName: String) {
-    var userName: String = userName
-    var groupName: String = groupName
+import java.sql.Date
+
+open class Schedule(groupMemberId: Long, startDate: Date) {
+    var groupMemberId: Long = groupMemberId
+    var startDate: Date = startDate
 }
 
-class WeeklySchedule(userName: String, groupName: String) : Schedule(userName, groupName) {
-    var days: List<String> = mutableListOf()
+class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberId, startDate) {
+    var days: List<Int> = mutableListOf()
 }
 
-class IntervalSchedule(userName: String, groupName: String) : Schedule(userName, groupName) {
+class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberId, startDate) {
     var days: Int? = null
 }

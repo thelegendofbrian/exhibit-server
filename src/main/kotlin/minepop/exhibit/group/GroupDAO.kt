@@ -6,12 +6,12 @@ import java.sql.PreparedStatement
 
 class GroupDAO: DAO() {
 
-    fun retrieveGroups(userName: String): List<Group> {
+    fun retrieveGroups(userId: Long): List<Group> {
         val groups = mutableListOf<Group>()
         connect().use { c ->
             c.prepareStatement("select group.name, group_id, owner_user_id from group_member" +
-                    " inner join `group` on group_id = group.id inner join user on user_id = user.id where user.name = ?").use {
-                it.setString(1, userName)
+                    " inner join `group` on group_id = group.id where user_id = ?").use {
+                it.setLong(1, userId)
                 val rs = it.executeQuery()
                 while (rs.next())
                     groups += Group(rs.getLong(2), rs.getString(1), rs.getLong(3))
@@ -41,12 +41,12 @@ class GroupDAO: DAO() {
         return groups
     }
 
-    fun retrieveMembers(groupName: String): List<User> {
+    fun retrieveMembers(groupId: Long): List<User> {
         val members = mutableListOf<User>()
         connect().use { c ->
             c.prepareStatement("select user_id, user.name from group_member" +
                     " inner join user on user_id = user.id where group_id = ?").use {
-                it.setString(1, groupName)
+                it.setLong(1, groupId)
                 val rs = it.executeQuery()
                 while (rs.next())
                     members += User(rs.getLong(1), rs.getString(2))
@@ -86,5 +86,48 @@ class GroupDAO: DAO() {
                 it.executeUpdate()
             }
         }
+    }
+
+    fun createGroupMember(groupId: Long, userId: Long) {
+        connect().use { c ->
+            var groupMemberId: Long? = null
+            c.prepareStatement("insert into group_member(group_id, user_id) values(?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
+                it.setLong(1, groupId)
+                it.setLong(2, userId)
+                it.executeUpdate()
+                val keys = it.generatedKeys
+                if (keys.next()) {
+                    groupMemberId = keys.getLong(1)
+                }
+            }
+            c.prepareStatement("insert into group_member_stats(group_member_id) values(?)").use {
+                it.setLong(1, groupMemberId!!)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun deleteGroupMember(groupId: Long, userId: Long) {
+        connect().use { c ->
+            c.prepareStatement("delete group_member where group_id = ? and user_id = ?").use {
+                it.setLong(1, groupId)
+                it.setLong(2, userId)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun retrieveGroupMemberId(groupId: Long, userId: Long): Long? {
+        connect().use { c ->
+            c.prepareStatement("select id from group_member where group_id = ? and user_id = ?").use {
+                it.setLong(1, groupId)
+                it.setLong(2, userId)
+                val rs = it.executeQuery()
+                if (rs.next()) {
+                    return rs.getLong(1)
+                }
+            }
+        }
+        return null
     }
 }

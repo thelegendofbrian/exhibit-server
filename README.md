@@ -19,8 +19,8 @@ create table exhibit.quick_auth(
 create table exhibit.`group`(
     id bigint primary key auto_increment,
     name varchar(16) not null,
-    owner_user_id bigint not null,
-    foreign key (owner_user_id) references user(id) on delete cascade
+    owner_user_id bigint,
+    foreign key (owner_user_id) references user(id) on delete set null
 );
 
 create table exhibit.group_member(
@@ -31,17 +31,26 @@ create table exhibit.group_member(
     foreign key (user_id) references user(id) on delete cascade
 );
 
+create table exhibit.group_member_stats(
+    group_member_id bigint primary key,
+    points bigint not null default 0,
+    streak int not null default 0,
+    regular_checkins int not null default 0,
+    bonus_checkins int not null default 0,
+    missed_checkins int not null default 0,
+    foreign key (group_member_id) references group_member(id) on delete cascade
+);
+
 create table exhibit.checkin(
-    user_id bigint not null,
-    group_id bigint not null,
+    group_member_id bigint not null,
     date date not null,
-    primary key (user_id, group_id, date),
-    foreign key (user_id) references user(id) on delete cascade,
-    foreign key (group_id) references `group`(id) on delete cascade
+    is_bonus char(1) not null,
+    primary key (group_member_id, date),
+    foreign key (group_member_id) references group_member(id) on delete cascade
 );
 
 create table exhibit.day_of_week(
-    id tinyint(4) primary key auto_increment,
+    id tinyint(4) primary key,
     day varchar(16) not null
 );
 
@@ -52,20 +61,18 @@ create table exhibit.schedule_type(
 
 create table exhibit.schedule(
     id bigint primary key auto_increment,
-    user_id bigint not null,
-    group_id bigint not null,
+    group_member_id bigint unique key,
     schedule_type_id tinyint(4) not null,
-    unique key user(user_id, group_id),
-    foreign key (schedule_type_id) references schedule_type(id) on delete cascade,
-    foreign key (user_id) references user(id) on delete cascade,
-    foreign key (group_id) references `group`(id) on delete cascade
+    start_date date not null,
+    foreign key (schedule_type_id) references schedule_type(id) on delete restrict,
+    foreign key (group_member_id) references group_member(id) on delete cascade
 );
 
 create table exhibit.schedule_weekly(
     schedule_id bigint primary key,
     day_of_week_id tinyint(4) not null,
     foreign key (schedule_id) references schedule(id) on delete cascade,
-    foreign key (day_of_week_id) references day_of_week(id) on delete cascade
+    foreign key (day_of_week_id) references day_of_week(id) on delete restrict
 );
 
 create table exhibit.schedule_interval(
@@ -83,14 +90,14 @@ create table exhibit.user_settings(
     foreign key (default_group_id) references `group`(id) on delete set null
 );
 
-insert into exhibit.day_of_week(day) values
-('Monday'),
-('Tuesday'),
-('Wednesday'),
-('Thursday'),
-('Friday'),
-('Saturday'),
-('Sunday');
+insert into exhibit.day_of_week(id, day) values
+(1, 'Monday'),
+(2, 'Tuesday'),
+(3, 'Wednesday'),
+(4, 'Thursday'),
+(5, 'Friday'),
+(6, 'Saturday'),
+(7, 'Sunday');
 
 insert into exhibit.schedule_type(name) values
 ('Weekly'),
