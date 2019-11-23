@@ -10,7 +10,7 @@ import java.time.LocalDate
 abstract class Schedule(var groupMemberId: Long, var startDate: Date) {
 
     /**
-     * This method determines the changes that need to be made to the group member's based on this check in.
+     * This method determines the changes that need to be made to the group members based on this check in.
      *
      * @param stats An object encapsulating the changes to be made.
      * @param now The date that the group member is checking in.
@@ -28,7 +28,7 @@ class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMembe
             If the last check in was not on that day, then the streak has been broken.
          */
         for (i in 1..7) {
-            val weekDay = now.dayOfWeek.value - i
+            val weekDay = now.minusDays(i.toLong()).dayOfWeek.value
             if (days.contains(weekDay)) {
                 stats.isStreakBroken = now.minusDays(i.toLong()) != lastCheckin
                 break
@@ -37,18 +37,18 @@ class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMembe
         /*
             If the schedule does not contain the weekday of check in, then this is a bonus check in.
          */
-        stats.isBonusCheckin = days.contains(now.dayOfWeek.value)
+        stats.isBonusCheckin = !days.contains(now.dayOfWeek.value)
 
         /*
             Step forward from the last check in one day at a time until the date of check in is reached.
             If the day is a scheduled check in, then it was a missed check in.
          */
-        var weekDay = lastCheckin
-        while (weekDay < now) {
-            weekDay = weekDay.plusDays(1)
-            if (days.contains(weekDay.dayOfWeek.value)) {
+        var date = lastCheckin.plusDays(1)
+        while (date < now) {
+            if (days.contains(date.dayOfWeek.value)) {
                 stats.missedCheckins++
             }
+            date = date.plusDays(1)
         }
     }
 }
