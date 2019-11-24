@@ -70,8 +70,9 @@ create table exhibit.schedule(
 );
 
 create table exhibit.schedule_weekly(
-    schedule_id bigint primary key,
+    schedule_id bigint not null,
     day_of_week_id tinyint(4) not null,
+    primary key (schedule_id, day_of_week_id),
     foreign key (schedule_id) references schedule(id) on delete cascade,
     foreign key (day_of_week_id) references day_of_week(id) on delete restrict
 );

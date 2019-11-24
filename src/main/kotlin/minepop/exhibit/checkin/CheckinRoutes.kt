@@ -13,12 +13,9 @@ import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.schedule.ScheduleDAO
-import minepop.exhibit.schedule.ScheduleStats
-import minepop.exhibit.schedule.calculateStats
-import minepop.exhibit.schedule.newStats
+import minepop.exhibit.schedule.calculateStatsUpdate
 import minepop.exhibit.stats.StatsDAO
 import java.sql.Date
-import java.time.LocalDate
 
 val checkinDAO = CheckinDAO()
 val scheduleDAO = ScheduleDAO()
@@ -32,7 +29,7 @@ fun Route.checkinRoutes() {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
             val groupId = call.parameters["groupId"]!!.toLong()
             if (pastDays != null) {
-                val checkins = checkinDAO.retrieveCheckins(groupId, exhibitSession().currentDate(), pastDays)
+                val checkins = checkinDAO.retrieveGroupCheckins(groupId, exhibitSession().currentDate(), pastDays)
                 call.respond(checkins)
             } else {
                 call.respond(HttpStatusCode.BadRequest)
@@ -44,7 +41,7 @@ fun Route.checkinRoutes() {
             val groupId = call.parameters["groupId"]!!.toLong()
             if (pastDays != null) {
                 val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, exhibitSession().userid)!!
-                val checkins = checkinDAO.retrieveCheckins(groupMemberId, exhibitSession().currentDate(), pastDays)
+                val checkins = checkinDAO.retrieveGroupMemberCheckins(groupMemberId, exhibitSession().currentDate(), pastDays)
                 if (pastDays == 1) {
                     if (checkins.isEmpty()) {
                         call.respond(HttpStatusCode.NoContent)
@@ -69,7 +66,7 @@ fun Route.checkinRoutes() {
             val lastScheduledCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)?.date
             val schedules = scheduleDAO.retrieveSchedules(groupMemberId, lastScheduledCheckin, dateNow)
 
-            val stats = schedules.calculateStats(groupMemberId, lastScheduledCheckin?.toLocalDate(), now)
+            val stats = schedules.calculateStatsUpdate(groupMemberId, lastScheduledCheckin?.toLocalDate(), now)
             statsDAO.updateStats(stats)
             checkinDAO.createCheckin(groupMemberId, dateNow, stats.isBonusCheckin)
 

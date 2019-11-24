@@ -15,7 +15,7 @@ class ScheduleListTest {
         val now = LocalDate.parse("2018-12-07") //Friday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        val stats = schedules.calculateStats(123, lastCheckin, now)
+        val stats = schedules.calculateStatsUpdate(123, lastCheckin, now)
 
         assertTrue(stats.isBonusCheckin)
         assertEquals(0, stats.missedCheckins)
@@ -35,7 +35,7 @@ class ScheduleListTest {
         val now = LocalDate.parse("2018-12-07") //Friday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        val stats = schedules.calculateStats(123, lastCheckin, now)
+        val stats = schedules.calculateStatsUpdate(123, lastCheckin, now)
 
         assertFalse(stats.isBonusCheckin)
         assertEquals(0, stats.missedCheckins)
@@ -55,7 +55,7 @@ class ScheduleListTest {
         val now = LocalDate.parse("2018-12-11") //Tuesday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        val stats = schedules.calculateStats(123, lastCheckin, now)
+        val stats = schedules.calculateStatsUpdate(123, lastCheckin, now)
 
         assertFalse(stats.isBonusCheckin)
         assertEquals(2, stats.missedCheckins)
@@ -80,7 +80,7 @@ class ScheduleListTest {
         val now = LocalDate.parse("2018-12-09") //?
         val lastCheckin = LocalDate.parse("2018-10-25") //?
 
-        val stats = schedules.calculateStats(123, lastCheckin, now)
+        val stats = schedules.calculateStatsUpdate(123, lastCheckin, now)
 
         assertFalse(stats.isBonusCheckin)
         assertEquals(5, stats.missedCheckins)

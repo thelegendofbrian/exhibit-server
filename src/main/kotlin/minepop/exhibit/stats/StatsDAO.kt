@@ -2,7 +2,7 @@ package minepop.exhibit.stats
 
 import minepop.exhibit.checkin.Checkin
 import minepop.exhibit.dao.DAO
-import minepop.exhibit.schedule.ScheduleStats
+import minepop.exhibit.schedule.ScheduleStatsUpdate
 
 class StatsDAO: DAO() {
 
@@ -19,7 +19,7 @@ class StatsDAO: DAO() {
         return null
     }
 
-    fun updateStats(stats: ScheduleStats) {
+    fun updateStats(stats: ScheduleStatsUpdate) {
         connect().use { c ->
             c.prepareStatement("update group_member_stats set" +
                     " streak = case when ? then streak + 1 else 0 end," +
@@ -33,6 +33,19 @@ class StatsDAO: DAO() {
                 it.setInt(4, stats.missedCheckins)
                 it.setLong(5, stats.groupMemberId)
                 it.executeUpdate()
+            }
+        }
+    }
+
+    fun retrieveStats(groupMemberId: Long): GroupMemberStatistics {
+        connect().use { c ->
+            c.prepareStatement("select streak, regular_checkins, bonus_checkins, missed_checkins, points" +
+                    " from group_member_stats where group_member_id = ?").use {
+                it.setLong(1, groupMemberId)
+                val rs = it.executeQuery()
+                rs.next()
+                return GroupMemberStatistics(groupMemberId, rs.getInt(1),
+                    rs.getInt(2), rs.getInt(3), rs.getInt(4), rs.getLong(5))
             }
         }
     }

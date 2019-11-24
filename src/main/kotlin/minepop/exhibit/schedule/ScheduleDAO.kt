@@ -24,25 +24,27 @@ class ScheduleDAO: DAO() {
             }
 
             var scheduleId: Int? = null
-            c.prepareStatement("insert into schedule(groupMemberId, schedule_type_id, start_date) values(?, ?, ?)",
+            c.prepareStatement("insert into schedule(group_member_id, schedule_type_id, start_date) values(?, ?, ?)",
                 PreparedStatement.RETURN_GENERATED_KEYS).use {
 
                 it.setLong(1, schedule.groupMemberId)
                 it.setInt(2, scheduleTypeId!!)
                 it.setDate(3, schedule.startDate)
                 it.executeUpdate()
-                scheduleId =  it.generatedKeys.getInt(1)
+                val keys = it.generatedKeys
+                keys.next()
+                scheduleId =  keys.getInt(1)
             }
 
             when (schedule) {
                 is WeeklySchedule -> schedule.days.forEach { day ->
-                    c.prepareStatement("insert into schedule_weekly(id, day_of_week_id) values(?, ?)").use {
+                    c.prepareStatement("insert into schedule_weekly(schedule_id, day_of_week_id) values(?, ?)").use {
                         it.setInt(1, scheduleId!!)
                         it.setInt(2, day)
                         it.executeUpdate()
                     }
                 }
-                is IntervalSchedule -> c.prepareStatement("insert into schedule_interval(id, interval_days) values(?, ?)").use {
+                is IntervalSchedule -> c.prepareStatement("insert into schedule_interval(schedule_id, interval_days) values(?, ?)").use {
                     it.setInt(1, scheduleId!!)
                     it.setInt(2, schedule.days!!)
                     it.executeUpdate()

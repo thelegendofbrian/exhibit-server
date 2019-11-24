@@ -26,15 +26,15 @@ fun Route.scheduleRoutes() {
             val userId = exhibitSession().userid
             val groupId = call.parameters["groupId"]!!.toLong()
             val body = call.receive<JsonObject>()
-
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
+
             val startDate = Date.valueOf(LocalDate.parse(body.get("startDate").asString))
             val scheduleType = body.get("type").asString
             var schedule: Schedule? = null
             if (scheduleType == "Weekly") {
                 schedule = WeeklySchedule(groupMemberId, startDate)
                 body.get("days").asJsonArray.forEach {
-                    (schedule as WeeklySchedule).days += DayOfWeek.valueOf(it.asString).value
+                    (schedule as WeeklySchedule).days += DayOfWeek.valueOf(it.asString.toUpperCase()).value
                 }
             } else if (scheduleType == "Interval") {
                 schedule = IntervalSchedule(groupMemberId, startDate)

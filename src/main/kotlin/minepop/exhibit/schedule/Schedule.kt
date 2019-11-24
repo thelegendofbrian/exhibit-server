@@ -16,13 +16,13 @@ abstract class Schedule(var groupMemberId: Long, var startDate: Date) {
      * @param start The start date for the period of stats. Usually the date of the last scheduled check in prior to today.
      * @param end The end date for the period of stats. Usually is the date that the group member is checking in.
      */
-    abstract fun calculateStats(stats: ScheduleStats, start: LocalDate, end: LocalDate)
+    abstract fun calculateStatsUpdate(stats: ScheduleStatsUpdate, start: LocalDate, end: LocalDate)
 }
 
 class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberId, startDate) {
     var days: List<Int> = mutableListOf()
 
-    override fun calculateStats(stats: ScheduleStats, start: LocalDate, end: LocalDate) {
+    override fun calculateStatsUpdate(stats: ScheduleStatsUpdate, start: LocalDate, end: LocalDate) {
         /*
             If the schedule does not contain the day of week of today, then this is a bonus check in.
          */
@@ -47,7 +47,7 @@ class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMembe
 class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberId, startDate) {
     var days: Int? = null
 
-    override fun calculateStats(stats: ScheduleStats, start: LocalDate, end: LocalDate) {
+    override fun calculateStatsUpdate(stats: ScheduleStatsUpdate, start: LocalDate, end: LocalDate) {
         /*
             This could perform poorly if the start date was a long time ago.
          */
@@ -74,19 +74,19 @@ class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMem
     }
 }
 
-data class ScheduleStats(var groupMemberId: Long, var isBonusCheckin: Boolean, var missedCheckins: Int)
+data class ScheduleStatsUpdate(var groupMemberId: Long, var isBonusCheckin: Boolean, var missedCheckins: Int)
 
-fun Schedule?.newStats(): ScheduleStats {
-    return ScheduleStats(this?.groupMemberId ?: -1,this == null, 0)
+fun Schedule?.newStats(): ScheduleStatsUpdate {
+    return ScheduleStatsUpdate(this?.groupMemberId ?: -1,this == null, 0)
 }
 
 /*
     The time between the last scheduled check in and today may span across multiple schedules.
     We need to add the missed days for each schedule.
  */
-fun List<Schedule>.calculateStats(groupMemberId: Long, lastScheduledCheckin: LocalDate?, dateNow: LocalDate): ScheduleStats {
+fun List<Schedule>.calculateStatsUpdate(groupMemberId: Long, lastScheduledCheckin: LocalDate?, dateNow: LocalDate): ScheduleStatsUpdate {
     if (isEmpty()) {
-       return ScheduleStats(groupMemberId, true, 0)
+       return ScheduleStatsUpdate(groupMemberId, true, 0)
     } else {
 
         val schedule = this[size - 1]
@@ -95,7 +95,7 @@ fun List<Schedule>.calculateStats(groupMemberId: Long, lastScheduledCheckin: Loc
         val start = if (lastScheduledCheckin == null) scheduleStart.minusDays(1)
             else if (scheduleStart > lastScheduledCheckin) scheduleStart.minusDays(1)
             else lastScheduledCheckin
-        schedule.calculateStats(totalStats, start, dateNow)
+        schedule.calculateStatsUpdate(totalStats, start, dateNow)
 
         /*
             Iterate through all past schedules.
@@ -113,7 +113,7 @@ fun List<Schedule>.calculateStats(groupMemberId: Long, lastScheduledCheckin: Loc
             } else {
                 lastScheduledCheckin
             }
-            pastSchedule.calculateStats(stats, start, nextScheduleStartDate)
+            pastSchedule.calculateStatsUpdate(stats, start, nextScheduleStartDate)
 
             totalStats.missedCheckins += stats.missedCheckins
         }

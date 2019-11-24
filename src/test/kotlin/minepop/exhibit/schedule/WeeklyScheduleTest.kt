@@ -11,7 +11,7 @@ import java.time.LocalDate
 class WeeklyScheduleTest {
 
     private var schedule: WeeklySchedule? = null
-    private var stats: ScheduleStats? = null
+    private var stats: ScheduleStatsUpdate? = null
 
     @Before
     fun setUp() {
@@ -29,7 +29,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-07") //Friday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
@@ -40,7 +40,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-10") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
@@ -51,7 +51,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-08") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
@@ -62,7 +62,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-15") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(5, stats!!.missedCheckins)
@@ -73,7 +73,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-11") //Tuesday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(1, stats!!.missedCheckins)
@@ -84,7 +84,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-24") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(10, stats!!.missedCheckins)
@@ -95,7 +95,7 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2020-03-01") //Sunday
         val lastCheckin = LocalDate.parse("2020-02-27") //Thursday
 
-        schedule!!.calculateStats(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
 
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(1, stats!!.missedCheckins)
