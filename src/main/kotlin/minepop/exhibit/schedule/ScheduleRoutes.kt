@@ -1,5 +1,6 @@
 package minepop.exhibit.schedule
 
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
@@ -48,7 +49,23 @@ fun Route.scheduleRoutes() {
             val groupId = call.parameters["groupId"]!!.toLong()
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
             val schedule = scheduleDAO.retrieveSchedule(groupMemberId, exhibitSession().currentDate())
-            call.respond(schedule!!)
+            if (schedule == null) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+                val body = JsonObject()
+                body.addProperty("startDate", schedule.startDate.toString())
+                body.addProperty("scheduleType", if (schedule is WeeklySchedule) "Weekly" else "Interval")
+                if (schedule is WeeklySchedule) {
+                    val array = JsonArray()
+                    schedule.days.forEach {
+                        array.add(it)
+                    }
+                    body.add("days", array)
+                } else if (schedule is IntervalSchedule) {
+                    body.addProperty("days", schedule.days)
+                }
+                call.respond(body)
+            }
         }
     }
 }

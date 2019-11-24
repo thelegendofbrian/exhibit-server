@@ -10,20 +10,22 @@ import io.ktor.routing.route
 import minepop.exhibit.Crypto
 import minepop.exhibit.auth.AuthUser
 import minepop.exhibit.auth.SessionAuthDAO
+import minepop.exhibit.corsRouting
 
 val settingsDAO = UserSettingsDAO()
 val sessionAuthDAO = SessionAuthDAO()
 
 fun Route.userRoutes() {
-    route("/user/settings") {
-        route("/settings") {
+
+    route("user") {
+        route("settings") {
             post("/") {
                 val settings = call.receive<UserSettings>()
                 settingsDAO.updateSettings(settings)
                 call.respond(HttpStatusCode.NoContent)
             }
         }
-        route("/account") {
+        route("account") {
             post("/") {
                 val accountPost = call.receive<AccountPost>()
                 val authUser = sessionAuthDAO.retrieveUser(id = accountPost.userId)

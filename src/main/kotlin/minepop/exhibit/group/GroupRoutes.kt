@@ -20,10 +20,11 @@ fun Route.groupRoutes() {
         post("/") {
             val postGroup = call.receive<PostGroup>()
             val group = groupDAO.createUpdateGroup(exhibitSession().userid, postGroup)
-            call.respond(group!!)
+            call.respond(group)
         }
         delete("/") {
-            groupDAO.deleteGroup(call.request.queryParameters["groupId"]!!.toLong())
+            val groupId = call.request.queryParameters["groupId"]!!.toLong()
+            groupDAO.deleteGroup(groupId, exhibitSession().userid)
             call.respond(HttpStatusCode.NoContent)
         }
         route("member/{groupId}") {

@@ -55,7 +55,7 @@ class GroupDAO: DAO() {
         return members
     }
 
-    fun createUpdateGroup(ownerUserId: Long, group: PostGroup): Group? {
+    fun createUpdateGroup(ownerUserId: Long, group: PostGroup): Group {
         connect().use { c ->
             if (group.id == null) {
                 c.prepareStatement("insert into `group`(name, owner_user_id) values (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
@@ -63,9 +63,8 @@ class GroupDAO: DAO() {
                     it.setLong(2, ownerUserId)
                     it.executeUpdate()
                     val generatedKeys = it.generatedKeys
-                    if (generatedKeys.next()) {
-                        return Group(generatedKeys.getLong(1), group.name, ownerUserId)
-                    }
+                    generatedKeys.next()
+                    return Group(generatedKeys.getLong(1), group.name, ownerUserId)
                 }
             } else {
                 c.prepareStatement("update `group` set name = ? where id = ?").use {
@@ -76,13 +75,13 @@ class GroupDAO: DAO() {
                 }
             }
         }
-        return null
     }
 
-    fun deleteGroup(groupId: Long) {
+    fun deleteGroup(groupId: Long, userId: Long) {
         connect().use { c ->
-            c.prepareStatement("delete from `group` where id = ?").use {
+            c.prepareStatement("delete from `group` where id = ? and owner_user_id = ?").use {
                 it.setLong(1, groupId)
+                it.setLong(2, userId)
                 it.executeUpdate()
             }
         }

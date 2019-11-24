@@ -25,7 +25,7 @@ class CheckinDAO : DAO() {
                 ps.setLong(3, groupMemberId)
                 val rs = ps.executeQuery()
                 while (rs.next()) {
-                    checkins.add(Checkin(groupMemberId, rs.getDate(1), rs.getString(2) == "Y"))
+                    checkins.add(Checkin(rs.getDate(1), rs.getString(2) == "Y"))
                 }
             }
         }

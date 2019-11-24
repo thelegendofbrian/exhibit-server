@@ -12,7 +12,7 @@ class StatsDAO: DAO() {
                 it.setLong(1, groupMemberId)
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    return Checkin(groupMemberId, rs.getDate(1), false)
+                    return Checkin(rs.getDate(1), false)
                 }
             }
         }
