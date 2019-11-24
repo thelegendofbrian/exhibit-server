@@ -83,7 +83,7 @@ class ScheduleDAO: DAO() {
             val startDates = mutableListOf<Date>()
 
             var sql = "select id, start_date from schedule where group_member_id = ? and start_date < ?"
-            start.let {
+            start?.let {
                 sql += " and start_date > ?"
             }
             sql += " order by start_date asc"
@@ -91,7 +91,7 @@ class ScheduleDAO: DAO() {
             c.prepareStatement(sql).use { ps ->
                 ps.setLong(1, groupMemberId)
                 ps.setDate(2, end)
-                start.let {
+                start?.let {
                     ps.setDate(3, start)
                 }
                 val rs = ps.executeQuery()
@@ -107,9 +107,9 @@ class ScheduleDAO: DAO() {
                 schedules += retrieveSchedule(scheduleId, groupMemberId, startDate)!!
             }
         }
-        start.let { letStart ->
-            retrieveSchedule(groupMemberId, letStart!!).let {
-                schedules += it!!
+        start?.let { it ->
+            retrieveSchedule(groupMemberId, it)?.let {
+                schedules += it
             }
         }
         return schedules

@@ -24,12 +24,12 @@ class GroupDAO: DAO() {
         val groups = mutableListOf<Group>()
         connect().use { c ->
             var sql = "select id, name, owner_user_id from `group`"
-            contains.let {
+            contains?.let {
                 sql += " where name like '%?%'"
             }
             sql += " limit ?"
             c.prepareStatement(sql).use { ps ->
-                contains.let {
+                contains?.let {
                     ps.setString(1, it)
                 }
                 ps.setInt(if (contains == null) 1 else 2, limit)
