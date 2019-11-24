@@ -43,7 +43,10 @@ fun main(args: Array<String>) {
 fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation) {
         gson {
-            // Configure Gson here
+            serializeNulls()
+            if (!prod) {
+                setPrettyPrinting()
+            }
         }
     }
 

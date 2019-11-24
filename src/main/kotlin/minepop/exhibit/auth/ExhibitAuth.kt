@@ -16,7 +16,6 @@ import minepop.exhibit.Crypto
 import minepop.exhibit.group.Group
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.prod
-import minepop.exhibit.user.UserSettings
 import minepop.exhibit.user.UserSettingsDAO
 import java.util.*
 
@@ -69,12 +68,15 @@ val groupDAO = GroupDAO()
 
 data class LoginResponse(val user: LoginResponseUser)
 data class LoginResponseUser(val name: String, val groups: List<Group>, val settings: LoginResponseUserSettings)
-data class LoginResponseUserSettings(val timezone: String, val defaultGroupId: Long?)
+data class LoginResponseUserSettings(val timeZone: String, val defaultGroupId: Long?, val displayName: String?, val userStatsToDisplay: List<GroupStats>)
+data class GroupStats(val groupId: Long, val stats: List<String>)
 
 fun Route.authRoutes() {
     post("login") {
         val groups = groupDAO.retrieveGroups(exhibitSession().userid)
-        val settings = LoginResponseUserSettings(exhibitSession().timezone, exhibitSession().defaultGroupId)
+        val groupStats = mutableListOf<GroupStats>()
+        groupStats += GroupStats(1, listOf("dayStreak", "adherencePercent", "points"))
+        val settings = LoginResponseUserSettings(exhibitSession().timezone, exhibitSession().defaultGroupId, "Hardcoded Display Name", groupStats)
         val user = LoginResponseUser(exhibitSession().username, groups, settings)
         call.respond(LoginResponse(user))
     }

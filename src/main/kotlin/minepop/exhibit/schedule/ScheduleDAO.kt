@@ -101,7 +101,7 @@ class ScheduleDAO: DAO() {
                 }
             }
 
-            for (i in 0..scheduleIds.size) {
+            for (i in scheduleIds.indices) {
                 val scheduleId = scheduleIds[i]
                 val startDate = startDates[i]
                 schedules += retrieveSchedule(scheduleId, groupMemberId, startDate)!!
