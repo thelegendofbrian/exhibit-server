@@ -10,8 +10,8 @@ import java.time.LocalDate
 
 class WeeklyScheduleTest {
 
-    var schedule: WeeklySchedule? = null
-    var stats: ScheduleStats? = null
+    private var schedule: WeeklySchedule? = null
+    private var stats: ScheduleStats? = null
 
     @Before
     fun setUp() {
@@ -29,9 +29,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-07") //Friday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertFalse(stats!!.isStreakBroken)
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
     }
@@ -41,9 +40,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-10") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertFalse(stats!!.isStreakBroken)
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
     }
@@ -53,9 +51,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-08") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertFalse(stats!!.isStreakBroken)
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(0, stats!!.missedCheckins)
     }
@@ -65,9 +62,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-15") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertTrue(stats!!.isStreakBroken)
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(5, stats!!.missedCheckins)
     }
@@ -77,9 +73,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-11") //Tuesday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertTrue(stats!!.isStreakBroken)
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(1, stats!!.missedCheckins)
     }
@@ -89,9 +84,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-24") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertTrue(stats!!.isStreakBroken)
         assertFalse(stats!!.isBonusCheckin)
         assertEquals(10, stats!!.missedCheckins)
     }
@@ -101,9 +95,8 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2020-03-01") //Sunday
         val lastCheckin = LocalDate.parse("2020-02-27") //Thursday
 
-        schedule!!.calculateStats(stats!!, now, lastCheckin)
+        schedule!!.calculateStats(stats!!, lastCheckin, now)
 
-        assertTrue(stats!!.isStreakBroken)
         assertTrue(stats!!.isBonusCheckin)
         assertEquals(1, stats!!.missedCheckins)
     }

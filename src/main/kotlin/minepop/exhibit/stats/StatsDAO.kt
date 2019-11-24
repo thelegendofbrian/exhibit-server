@@ -27,7 +27,7 @@ class StatsDAO: DAO() {
                     " bonus_checkins = case when ? then bonus_checkins + 1 else bonus_checkins end," +
                     " missed_checkins = missed_checkins + ?" +
                     " where group_member_id = ?").use {
-                it.setBoolean(1, !stats.isStreakBroken)
+                it.setBoolean(1, stats.missedCheckins == 0)
                 it.setBoolean(2, !stats.isBonusCheckin)
                 it.setBoolean(3, stats.isBonusCheckin)
                 it.setInt(4, stats.missedCheckins)

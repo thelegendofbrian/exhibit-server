@@ -30,6 +30,7 @@ fun Route.userRoutes() {
                 authUser?.salt = Crypto.nextSalt(32)
                 authUser?.saltedHash = Crypto.hash(accountPost.newPassword.toCharArray(), authUser!!.salt)
                 sessionAuthDAO.updateUser(authUser)
+                call.respond(HttpStatusCode.NoContent)
             }
         }
     }

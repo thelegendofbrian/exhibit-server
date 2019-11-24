@@ -13,9 +13,12 @@ import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.schedule.ScheduleDAO
+import minepop.exhibit.schedule.ScheduleStats
+import minepop.exhibit.schedule.calculateStats
 import minepop.exhibit.schedule.newStats
 import minepop.exhibit.stats.StatsDAO
 import java.sql.Date
+import java.time.LocalDate
 
 val checkinDAO = CheckinDAO()
 val scheduleDAO = ScheduleDAO()
@@ -60,23 +63,18 @@ fun Route.checkinRoutes() {
             val groupId = call.parameters["groupId"]!!.toLong()
             val userId = exhibitSession().userid
             val now = exhibitSession().now()
-            val date = Date.valueOf(now)
+            val dateNow = Date.valueOf(now)
 
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
-            val schedule = scheduleDAO.retrieveSchedule(groupMemberId, date)
-            var lastCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)?.date?.toLocalDate()
-            val stats = schedule.newStats()
+            val lastScheduledCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)?.date
+            val schedules = scheduleDAO.retrieveSchedules(groupMemberId, lastScheduledCheckin, dateNow)
 
-            if (schedule != null) {
-                if (lastCheckin == null)
-                    lastCheckin = schedule.startDate.toLocalDate().minusDays(1)
-                schedule.calculateStats(stats, now, lastCheckin!!)
-            }
-
+            val stats = schedules.calculateStats(groupMemberId, lastScheduledCheckin?.toLocalDate(), now)
             statsDAO.updateStats(stats)
-            checkinDAO.createCheckin(groupMemberId, date, stats.isBonusCheckin)
+            checkinDAO.createCheckin(groupMemberId, dateNow, stats.isBonusCheckin)
+
             val body = JsonObject()
-            body.addProperty("date", date.toString())
+            body.addProperty("date", dateNow.toString())
             call.respond(body)
         }
     }
