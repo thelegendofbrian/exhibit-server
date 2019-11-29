@@ -40,7 +40,7 @@ fun Route.checkinRoutes() {
             val pastDays = call.request.queryParameters["pastDays"]?.toIntOrNull()
             val groupId = call.parameters["groupId"]!!.toLong()
             if (pastDays != null) {
-                val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, exhibitSession().userid)!!
+                val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, exhibitSession().userId)!!
                 val checkins = checkinDAO.retrieveGroupMemberCheckins(groupMemberId, exhibitSession().currentDate(), pastDays)
                 if (pastDays == 1) {
                     if (checkins.isEmpty()) {
@@ -58,7 +58,7 @@ fun Route.checkinRoutes() {
 
         post("/{groupId}") {
             val groupId = call.parameters["groupId"]!!.toLong()
-            val userId = exhibitSession().userid
+            val userId = exhibitSession().userId
             val now = exhibitSession().now()
             val dateNow = Date.valueOf(now)
 

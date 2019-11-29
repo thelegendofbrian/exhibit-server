@@ -19,23 +19,23 @@ fun Route.groupRoutes() {
         }
         post("/") {
             val postGroup = call.receive<PostGroup>()
-            val group = groupDAO.createUpdateGroup(exhibitSession().userid, postGroup)
+            val group = groupDAO.createUpdateGroup(exhibitSession().userId, postGroup)
             call.respond(group)
         }
         delete("/") {
             val groupId = call.request.queryParameters["groupId"]!!.toLong()
-            groupDAO.deleteGroup(groupId, exhibitSession().userid)
+            groupDAO.deleteGroup(groupId, exhibitSession().userId)
             call.respond(HttpStatusCode.NoContent)
         }
         route("member/{groupId}") {
             post("/") {
                 val groupId = call.parameters["groupId"]!!.toLong()
-                groupDAO.createGroupMember(groupId, exhibitSession().userid)
+                groupDAO.createGroupMember(groupId, exhibitSession().userId)
                 call.respond(HttpStatusCode.NoContent)
             }
             delete("/") {
                 val groupId = call.parameters["groupId"]!!.toLong()
-                groupDAO.deleteGroupMember(groupId, exhibitSession().userid)
+                groupDAO.deleteGroupMember(groupId, exhibitSession().userId)
                 call.respond(HttpStatusCode.NoContent)
             }
         }

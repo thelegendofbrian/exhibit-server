@@ -23,7 +23,7 @@ val scheduleDAO = ScheduleDAO()
 fun Route.scheduleRoutes() {
     route("schedule/{groupId}") {
         post("/") {
-            val userId = exhibitSession().userid
+            val userId = exhibitSession().userId
             val groupId = call.parameters["groupId"]!!.toLong()
             val body = call.receive<JsonObject>()
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
@@ -45,7 +45,7 @@ fun Route.scheduleRoutes() {
         }
 
         get("/") {
-            val userId = exhibitSession().userid
+            val userId = exhibitSession().userId
             val groupId = call.parameters["groupId"]!!.toLong()
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
             val schedule = scheduleDAO.retrieveSchedule(groupMemberId, exhibitSession().currentDate())

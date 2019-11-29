@@ -27,7 +27,7 @@ fun Route.memberRoutes() {
         route("{groupId}") {
             get("/statistics") {
 
-                val userId = exhibitSession().userid
+                val userId = exhibitSession().userId
                 val groupId = call.parameters["groupId"]!!.toLong()
                 val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
                 val schedule = scheduleDAO.retrieveSchedule(groupMemberId, exhibitSession().currentDate())
