@@ -60,20 +60,22 @@ class ScheduleDAO: DAO() {
 
             var scheduleId: Long? = null
             var startDate: Date? = null
+            var scheduleTypeId: Int? = null
 
-            c.prepareStatement("select id, start_date from schedule where group_member_id = ? and start_date < ? order by start_date desc limit 1").use {
+            c.prepareStatement("select id, start_date, schedule_type_id from schedule where group_member_id = ? and start_date <= ? order by start_date desc limit 1").use {
                 it.setLong(1, groupMemberId)
                 it.setDate(2, date)
                 val rs = it.executeQuery()
                 if (rs.next()) {
                     scheduleId = rs.getLong(1)
                     startDate = rs.getDate(2)
+                    scheduleTypeId = rs.getInt(3)
                 } else {
                     return null
                 }
             }
 
-            return retrieveSchedule(scheduleId!!, groupMemberId, startDate!!)
+            return retrieveSchedule(scheduleId!!, scheduleTypeId!!, groupMemberId, startDate!!)
         }
     }
 
@@ -82,9 +84,10 @@ class ScheduleDAO: DAO() {
         connect().use { c ->
 
             val scheduleIds = mutableListOf<Long>()
+            val scheduleTypeIds = mutableListOf<Int>()
             val startDates = mutableListOf<Date>()
 
-            var sql = "select id, start_date from schedule where group_member_id = ? and start_date < ?"
+            var sql = "select id, start_date, schedule_type_id from schedule where group_member_id = ? and start_date < ?"
             start?.let {
                 sql += " and start_date > ?"
             }
@@ -100,13 +103,15 @@ class ScheduleDAO: DAO() {
                 while (rs.next()) {
                     scheduleIds += rs.getLong(1)
                     startDates += rs.getDate(2)
+                    scheduleTypeIds += rs.getInt(3)
                 }
             }
 
             for (i in scheduleIds.indices) {
                 val scheduleId = scheduleIds[i]
                 val startDate = startDates[i]
-                schedules += retrieveSchedule(scheduleId, groupMemberId, startDate)!!
+                val scheduleTypeId = scheduleTypeIds[i]
+                schedules += retrieveSchedule(scheduleId, scheduleTypeId, groupMemberId, startDate)!!
             }
         }
         start?.let { it ->
@@ -117,12 +122,12 @@ class ScheduleDAO: DAO() {
         return schedules
     }
 
-    private fun retrieveSchedule(scheduleId: Long, groupMemberId: Long, startDate: Date): Schedule? {
+    private fun retrieveSchedule(scheduleId: Long, scheduleTypeId: Int, groupMemberId: Long, startDate: Date): Schedule? {
         var schedule: Schedule? = null
         connect().use { c ->
 
             c.prepareStatement("select name from schedule_type where id = ?").use {
-                it.setLong(1, scheduleId)
+                it.setInt(1, scheduleTypeId)
                 val rs = it.executeQuery()
                 if (rs.next()) {
                     schedule = if (rs.getString(1) == "Weekly") WeeklySchedule(groupMemberId, startDate) else IntervalSchedule(groupMemberId, startDate)
@@ -131,7 +136,7 @@ class ScheduleDAO: DAO() {
 
             when (schedule) {
                 is WeeklySchedule -> {
-                    c.prepareStatement("select name from schedule_weekly sched inner join day_of_week day on sched.day_of_week_id = day.id where id = ?").use {
+                    c.prepareStatement("select day_of_week_id from schedule_weekly where schedule_id = ?").use {
                         it.setLong(1, scheduleId)
                         val rs = it.executeQuery()
                         while (rs.next()) {
