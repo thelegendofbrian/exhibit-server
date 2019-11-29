@@ -17,10 +17,8 @@ import io.ktor.sessions.*
 import minepop.exhibit.auth.ExhibitSession
 import minepop.exhibit.auth.installExhibitAuth
 import minepop.exhibit.auth.authRoutes
-import minepop.exhibit.checkin.checkinRoutes
 import minepop.exhibit.group.groupRoutes
 import minepop.exhibit.member.memberRoutes
-import minepop.exhibit.schedule.scheduleRoutes
 import minepop.exhibit.user.userRoutes
 
 val conf = AppConfig()
@@ -70,8 +68,6 @@ fun Application.module(testing: Boolean = false) {
 
         authenticate("Form") {
             authRoutes()
-            checkinRoutes()
-            scheduleRoutes()
             groupRoutes()
             userRoutes()
             memberRoutes()

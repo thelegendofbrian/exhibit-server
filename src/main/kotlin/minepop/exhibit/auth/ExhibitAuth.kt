@@ -41,8 +41,8 @@ fun Authentication.Configuration.installExhibitAuth() {
                 return@validate null
             }
 
-            if (user.userSettings.timezone == null) {
-                user.userSettings.timezone = timezone
+            if (user.userSettings.timeZone == null) {
+                user.userSettings.timeZone = timezone
                 userSettingsDAO.updateSettings(user.userSettings)
             }
 

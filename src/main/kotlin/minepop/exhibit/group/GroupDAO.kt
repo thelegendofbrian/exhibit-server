@@ -6,7 +6,7 @@ import java.sql.PreparedStatement
 
 class GroupDAO: DAO() {
 
-    fun retrieveGroups(userId: Long): List<Group> {
+    fun retrieveGroupsByMember(userId: Long): List<Group> {
         val groups = mutableListOf<Group>()
         connect().use { c ->
             c.prepareStatement("select group.name, group_id, owner_user_id from group_member" +
@@ -20,19 +20,31 @@ class GroupDAO: DAO() {
         return groups
     }
 
-    fun retrieveGroups(contains: String?, limit: Int): List<Group> {
+    fun retrieveGroups(contains: String?, page: Int, pageSize: Int, userId: Long?): List<Group> {
         val groups = mutableListOf<Group>()
         connect().use { c ->
             var sql = "select id, name, owner_user_id from `group`"
             contains?.let {
                 sql += " where name like '%?%'"
             }
-            sql += " limit ?"
+            userId?.let {
+                sql += if (contains == null) " where" else " and"
+                sql += " id not in (select group_id from group_member where user_id = ?)"
+            }
+            sql += " limit ?,?"
             c.prepareStatement(sql).use { ps ->
+                var idx = 1
                 contains?.let {
-                    ps.setString(1, it)
+                    ps.setString(idx, it)
+                    idx++
                 }
-                ps.setInt(if (contains == null) 1 else 2, limit)
+                userId?.let {
+                    ps.setLong(idx, userId)
+                    idx++
+                }
+                ps.setInt(idx, page)
+                idx++
+                ps.setInt(idx, pageSize)
                 val rs = ps.executeQuery()
                 while (rs.next())
                     groups += Group(rs.getLong(1), rs.getString(2), rs.getLong(3))
@@ -55,24 +67,26 @@ class GroupDAO: DAO() {
         return members
     }
 
-    fun createUpdateGroup(ownerUserId: Long, group: PostGroup): Group {
+    fun createGroup(ownerUserId: Long, groupName: String): Long {
         connect().use { c ->
-            if (group.id == null) {
-                c.prepareStatement("insert into `group`(name, owner_user_id) values (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
-                    it.setString(1, group.name)
-                    it.setLong(2, ownerUserId)
-                    it.executeUpdate()
-                    val generatedKeys = it.generatedKeys
-                    generatedKeys.next()
-                    return Group(generatedKeys.getLong(1), group.name, ownerUserId)
-                }
-            } else {
-                c.prepareStatement("update `group` set name = ? where id = ?").use {
-                    it.setString(1, group.name)
-                    it.setLong(2, group.id!!)
-                    it.executeUpdate()
-                    return Group(group.id!!, group.name, ownerUserId)
-                }
+            c.prepareStatement("insert into `group`(name, owner_user_id) values (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS).use {
+                it.setString(1, groupName)
+                it.setLong(2, ownerUserId)
+                it.executeUpdate()
+                val generatedKeys = it.generatedKeys
+                generatedKeys.next()
+                return generatedKeys.getLong(1)
+            }
+        }
+    }
+
+    fun updateGroup(group: Group) {
+        connect().use { c ->
+            c.prepareStatement("update `group` set name = ? where id = ? and owner_user_id = ?").use {
+                it.setString(1, group.name)
+                it.setLong(2, group.id)
+                it.setLong(3, group.ownerUserId)
+                it.executeUpdate()
             }
         }
     }
