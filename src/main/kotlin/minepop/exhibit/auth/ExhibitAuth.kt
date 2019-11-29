@@ -91,7 +91,7 @@ fun Route.authRoutes() {
             val stats = statsDAO.retrieveStats(groupMemberId)
             defaultGroupStats = stats.calculateStatistics()
             val defaultGroupCheckin = checkinDAO.retrieveGroupMemberCheckins(groupMemberId, exhibitSession().currentDate(), 1)
-            isDefaultGroupCheckedIn = !defaultGroupCheckin.isEmpty()
+            isDefaultGroupCheckedIn = defaultGroupCheckin.isNotEmpty()
         }
         val settings = LoginResponseUserSettings(exhibitSession().timezone, exhibitSession().defaultGroupId,
             "Hardcoded Display Name", groupStats, defaultGroupStats, isDefaultGroupCheckedIn)
