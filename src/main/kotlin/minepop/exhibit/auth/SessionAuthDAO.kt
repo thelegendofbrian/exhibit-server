@@ -25,7 +25,7 @@ class SessionAuthDAO : DAO() {
                     }
                     return AuthUser(userId, rs.getString(2),
                         rs.getInt(3), rs.getBytes(4), rs.getBytes(5),
-                        UserSettings(userId, rs.getString(6), defaultGroupId, rs.getString(7))
+                        UserSettings(userId, rs.getString(6), defaultGroupId, rs.getString(8))
                     )
                 }
             }

@@ -85,7 +85,7 @@ create table exhibit.schedule_interval(
 
 create table exhibit.user_settings(
     user_id bigint primary key,
-    timezone varchar(16),
+    timezone varchar(32),
     default_group_id bigint,
     display_name varchar(16),
     foreign key (user_id) references user(id) on delete cascade,
