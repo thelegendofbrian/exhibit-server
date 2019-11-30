@@ -6,6 +6,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.Route
+import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.route
 import minepop.exhibit.Crypto
@@ -18,6 +19,15 @@ fun Route.userRoutes() {
 
     route("user") {
         route("settings") {
+            get("/") {
+                val userId = exhibitSession().userId
+                val settings = settingsDAO.retrieveSettings(userId)
+                val response = JsonObject()
+                response.addProperty("timeZone", settings.timeZone)
+                response.addProperty("displayName", settings.displayName)
+                response.addProperty("defaultGroupId", settings.defaultGroupId)
+                call.respond(response)
+            }
             post("/") {
                 val request = call.receive<JsonObject>()
                 val timeZone = request.get("timeZone").asString
