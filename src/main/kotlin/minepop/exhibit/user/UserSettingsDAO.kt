@@ -14,12 +14,12 @@ class UserSettingsDAO: DAO() {
                 } else {
                     it.setLong(2, settings.defaultGroupId!!)
                 }
-                it.setLong(3, settings.userId)
                 if (settings.displayName == null) {
-                    it.setNull(4, Types.VARCHAR)
+                    it.setNull(3, Types.VARCHAR)
                 } else {
-                    it.setString(4, settings.displayName!!)
+                    it.setString(3, settings.displayName!!)
                 }
+                it.setLong(4, settings.userId)
                 it.executeUpdate()
             }
         }
@@ -28,7 +28,7 @@ class UserSettingsDAO: DAO() {
     fun retrieveSettings(userId: Long): UserSettings {
         connect().use { c ->
             c.prepareStatement("select timezone, default_group_id, display_name from user_settings where user_id = ?").use {
-                it.setLong(2, userId)
+                it.setLong(1, userId)
                 val rs = it.executeQuery()
                 rs.next()
                 return UserSettings(userId, rs.getString(1), rs.getLong(2), rs.getString(3))
