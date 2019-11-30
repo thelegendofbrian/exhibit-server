@@ -18,6 +18,9 @@ fun Route.memberRoutes() {
             route("schedule") {
                 scheduleRoutes()
             }
+            route("activity") {
+                activityRoutes()
+            }
         }
     }
 }

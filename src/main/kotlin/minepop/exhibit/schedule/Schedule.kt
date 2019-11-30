@@ -39,7 +39,7 @@ class WeeklySchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMembe
     ) {
         var weeklyDay = scheduleStart
         while (weeklyDay < end) {
-            if (days.contains(weeklyDay.dayOfWeek.value)) {
+            if (weeklyDay >= start && days.contains(weeklyDay.dayOfWeek.value)) {
                 forEach(weeklyDay)
             }
             weeklyDay = weeklyDay.plusDays(1)
@@ -75,7 +75,9 @@ class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMem
         val interval = days!!.toLong()
         while (intervalDay < end) {
             intervalDay = intervalDay.plusDays(interval)
-            forEach(intervalDay)
+            if (intervalDay >= start) {
+                forEach(intervalDay)
+            }
         }
     }
 
@@ -109,6 +111,31 @@ data class ScheduleStatsUpdate(var groupMemberId: Long, var isBonusCheckin: Bool
 
 fun Schedule?.newStats(): ScheduleStatsUpdate {
     return ScheduleStatsUpdate(this?.groupMemberId ?: -1,this == null, 0)
+}
+
+/*
+ * This method assumes that the collection only contains the relevant schedules for the given start and end dates.
+ */
+fun List<Schedule>.iterate(start: LocalDate, end: LocalDate, forEach: (date: LocalDate) -> Unit) {
+    for (i in indices) {
+
+        val schedule = this[i]
+
+        val scheduleStart = schedule.startDate.toLocalDate()
+
+        var iterateStart = scheduleStart
+        var iterateEnd = end
+        if (i + 1 < size) {
+            val nextSchedule = this[i + 1]
+            val nextScheduleStart = nextSchedule.startDate.toLocalDate()
+            if (start > scheduleStart && start < nextScheduleStart) {
+                iterateStart = start
+            }
+            iterateEnd = nextScheduleStart
+        }
+
+        schedule.iterate(iterateStart = iterateStart, iterateEnd = iterateEnd, forEach = forEach)
+    }
 }
 
 /*

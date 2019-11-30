@@ -33,6 +33,23 @@ class CheckinDAO : DAO() {
         return checkins
     }
 
+    fun retrieveGroupMemberCheckins(groupMemberId: Long, start: Date, end: Date): List<Checkin> {
+        val checkins = mutableListOf<Checkin>()
+        connect().use { c ->
+            c.prepareStatement("select date, is_bonus from checkin where date > ? and date < ? and group_member_id = ? order by date asc").use {
+                    ps ->
+                ps.setDate(1, start)
+                ps.setDate(2, end)
+                ps.setLong(3, groupMemberId)
+                val rs = ps.executeQuery()
+                while (rs.next()) {
+                    checkins.add(Checkin(rs.getDate(1), rs.getString(2) == "Y"))
+                }
+            }
+        }
+        return checkins
+    }
+
     fun retrieveGroupCheckins(groupId: Long, date: Date, pastDays: Int): List<Checkin> {
         val checkins = mutableListOf<Checkin>()
         connect().use { c ->

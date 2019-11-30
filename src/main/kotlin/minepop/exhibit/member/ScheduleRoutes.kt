@@ -11,6 +11,7 @@ import io.ktor.routing.get
 import io.ktor.routing.post
 import minepop.exhibit.auth.currentDate
 import minepop.exhibit.auth.exhibitSession
+import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.schedule.IntervalSchedule
 import minepop.exhibit.schedule.Schedule
@@ -19,6 +20,8 @@ import minepop.exhibit.schedule.WeeklySchedule
 import java.sql.Date
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.*
 
 private val scheduleDAO = ScheduleDAO()
 private val groupDAO = GroupDAO()
@@ -56,17 +59,35 @@ fun Route.scheduleRoutes() {
         } else {
             val body = JsonObject()
             body.addProperty("startDate", schedule.startDate.toString())
-            body.addProperty("scheduleType", if (schedule is WeeklySchedule) "Weekly" else "Interval")
+            body.addProperty("type", if (schedule is WeeklySchedule) "Weekly" else "Interval")
             if (schedule is WeeklySchedule) {
                 val array = JsonArray()
                 schedule.days.forEach {
-                    array.add(it)
+                    val day = DayOfWeek.of(it).getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+                    array.add(day)
                 }
                 body.add("days", array)
             } else if (schedule is IntervalSchedule) {
                 body.addProperty("days", schedule.days)
             }
             call.respond(body)
+        }
+    }
+
+    get("/projection") {
+        val userId = exhibitSession().userId
+        val groupId = call.parameters["groupId"]!!.toLong()
+        val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
+        val schedule = scheduleDAO.retrieveSchedule(groupMemberId, exhibitSession().currentDate())
+        if (schedule == null) {
+            call.respond(HttpStatusCode.NoContent)
+        } else {
+            val now = exhibitSession().now()
+            val projectedSchedule = JsonArray()
+            schedule.iterate(iterateStart = now, iterateEnd = now.plusDays(7)) {
+                projectedSchedule.add(it.toString())
+            }
+            call.respond(projectedSchedule)
         }
     }
 }
