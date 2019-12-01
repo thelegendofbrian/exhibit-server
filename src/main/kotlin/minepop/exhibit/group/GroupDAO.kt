@@ -25,7 +25,7 @@ class GroupDAO: DAO() {
         connect().use { c ->
             var sql = "select id, name, owner_user_id from `group`"
             contains?.let {
-                sql += " where name like '%?%'"
+                sql += " where name like '%' || ? || '%'"
             }
             userId?.let {
                 sql += if (contains == null) " where" else " and"

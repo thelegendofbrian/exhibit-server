@@ -13,7 +13,7 @@ private val groupDAO = GroupDAO()
 fun Route.groupRoutes() {
     route("group") {
         get("/") {
-            val contains = call.request.queryParameters["contains"]!!
+            val contains = call.request.queryParameters["contains"]
             val page = call.request.queryParameters["page"]!!.toInt()
             val pageSize = call.request.queryParameters["pageSize"]!!.toInt()
             val nonmemberOnly = call.request.queryParameters["nonmemberOnly"]!!.toBoolean()

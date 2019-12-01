@@ -53,6 +53,7 @@ fun Route.activityRoutes() {
                 val activity = JsonObject()
                 activity.addProperty("date", it.toString())
                 activity.addProperty("type", "missed")
+                activityMap[it] = activity
             }
         }
 
