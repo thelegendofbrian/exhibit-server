@@ -8,7 +8,7 @@ class SessionAuthDAO : DAO() {
 
     fun retrieveUser(name: String? = null, id: Long? = null): AuthUser? {
         connect().use { c ->
-            c.prepareStatement("select id, name, failed_logins, salt, salted_hash, timezone, default_group_id, display_name from user" +
+            c.prepareStatement("select id, name, failed_logins, salt, salted_hash, timezone, default_group_id, display_name, start_of_week from user" +
                     " inner join user_settings on user.id = user_id" +
                     " where ${if (name == null) "id" else "name"} = ?").use {
                 if (name == null) {
@@ -25,7 +25,7 @@ class SessionAuthDAO : DAO() {
                     }
                     return AuthUser(userId, rs.getString(2),
                         rs.getInt(3), rs.getBytes(4), rs.getBytes(5),
-                        UserSettings(userId, rs.getString(6), defaultGroupId, rs.getString(8))
+                        UserSettings(userId, rs.getString(6), defaultGroupId, rs.getString(8), rs.getInt(9))
                     )
                 }
             }

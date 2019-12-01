@@ -31,7 +31,7 @@ class GroupDAO: DAO() {
                 sql += if (contains == null) " where" else " and"
                 sql += " id not in (select group_id from group_member where user_id = ?)"
             }
-            sql += " limit ?,?"
+            sql += " order by name limit ?,?"
             c.prepareStatement(sql).use { ps ->
                 var idx = 1
                 contains?.let {

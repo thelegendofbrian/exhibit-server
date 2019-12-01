@@ -36,12 +36,12 @@ fun Route.scheduleRoutes() {
         val startDate = Date.valueOf(LocalDate.parse(body.get("startDate").asString))
         val scheduleType = body.get("type").asString
         var schedule: Schedule? = null
-        if (scheduleType == "Weekly") {
+        if (scheduleType == "weekly") {
             schedule = WeeklySchedule(groupMemberId, startDate)
             body.get("days").asJsonArray.forEach {
                 (schedule as WeeklySchedule).days += DayOfWeek.valueOf(it.asString.toUpperCase()).value
             }
-        } else if (scheduleType == "Interval") {
+        } else if (scheduleType == "interval") {
             schedule = IntervalSchedule(groupMemberId, startDate)
             schedule.days = body.get("days").asInt
         }
@@ -59,7 +59,7 @@ fun Route.scheduleRoutes() {
         } else {
             val body = JsonObject()
             body.addProperty("startDate", schedule.startDate.toString())
-            body.addProperty("type", if (schedule is WeeklySchedule) "Weekly" else "Interval")
+            body.addProperty("type", if (schedule is WeeklySchedule) "weekly" else "interval")
             if (schedule is WeeklySchedule) {
                 val array = JsonArray()
                 schedule.days.forEach {
