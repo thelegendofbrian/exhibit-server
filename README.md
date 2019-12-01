@@ -92,6 +92,28 @@ create table exhibit.user_settings(
     foreign key (default_group_id) references `group`(id) on delete set null
 );
 
+create table exhibit.statistic_view(
+    id tinyint(4) primary key auto_increment,
+    name varchar(16) not null
+);
+
+create table exhibit.statistic(
+    id int auto_increment,
+    view_id tinyint(4),
+    name varchar(16) not null,
+    primary key(id, view_id),
+    foreign key (view_id) references statistic_view(id) on delete restrict
+);
+
+create table exhibit.member_settings_view(
+    group_member_id bigint,
+    view_id tinyint(4),
+    stat_id int,
+    primary key(group_member_id, view_id, stat_id),
+    foreign key (view_id) references statistic_view(id) on delete restrict,
+    foreign key (stat_id) references statistic(id) on delete restrict
+);
+
 insert into exhibit.day_of_week(id, day) values
 (1, 'Monday'),
 (2, 'Tuesday'),
@@ -104,4 +126,20 @@ insert into exhibit.day_of_week(id, day) values
 insert into exhibit.schedule_type(name) values
 ('Weekly'),
 ('Interval');
+
+insert into exhibit.statistic_view(name) values
+('User'),
+('Group');
+
+insert into exhibit.statistic(name, view_id) values
+('dayStreak', (select id from exhibit.statistic_view where name = 'User')),
+('adherence', (select id from exhibit.statistic_view where name = 'User')),
+('points', (select id from exhibit.statistic_view where name = 'User')),
+('bonusCheckins', (select id from exhibit.statistic_view where name = 'User')),
+('totalCheckins', (select id from exhibit.statistic_view where name = 'User')),
+('dayStreak', (select id from exhibit.statistic_view where name = 'Group')),
+('adherence', (select id from exhibit.statistic_view where name = 'Group')),
+('points', (select id from exhibit.statistic_view where name = 'Group')),
+('bonusCheckins', (select id from exhibit.statistic_view where name = 'Group')),
+('totalCheckins', (select id from exhibit.statistic_view where name = 'Group'));
 ```
