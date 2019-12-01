@@ -26,6 +26,7 @@ fun Route.userRoutes() {
                 response.addProperty("timeZone", settings.timeZone)
                 response.addProperty("displayName", settings.displayName)
                 response.addProperty("defaultGroupId", settings.defaultGroupId)
+                response.addProperty("startOfWeek", settings.startOfWeek)
                 call.respond(response)
             }
             post("/") {
@@ -33,7 +34,8 @@ fun Route.userRoutes() {
                 val timeZone = request.get("timeZone").asString
                 val defaultGroupId = request.get("defaultGroupId").asLong
                 val displayName = request.get("displayName").asString
-                settingsDAO.updateSettings(UserSettings(exhibitSession().userId, timeZone, defaultGroupId, displayName))
+                val startOfWeek = request.get("startOfWeek").asInt
+                settingsDAO.updateSettings(UserSettings(exhibitSession().userId, timeZone, defaultGroupId, displayName, startOfWeek))
                 call.respond(HttpStatusCode.NoContent)
             }
         }

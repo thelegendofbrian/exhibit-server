@@ -80,7 +80,7 @@ create table exhibit.schedule_weekly(
 create table exhibit.schedule_interval(
     schedule_id bigint primary key,
     interval_days tinyint(4) not null,
-    foreign key (schedule_id) references schedule(id) on delete cascade
+    foreign key (schedule_id) references schedule(id) on delete restrict
 );
 
 create table exhibit.user_settings(
@@ -88,8 +88,10 @@ create table exhibit.user_settings(
     timezone varchar(32),
     default_group_id bigint,
     display_name varchar(16),
+    start_of_week tinyint(4) not null default 1,
     foreign key (user_id) references user(id) on delete cascade,
-    foreign key (default_group_id) references `group`(id) on delete set null
+    foreign key (default_group_id) references `group`(id) on delete set null,
+    foreign key (start_of_week) references day_of_week(id) on delete restrict
 );
 
 create table exhibit.statistic_view(
@@ -110,6 +112,7 @@ create table exhibit.member_settings_view(
     view_id tinyint(4),
     stat_id int,
     primary key(group_member_id, view_id, stat_id),
+    fooreign key (group_member_id) references group_member(id) on delete cascade,
     foreign key (view_id) references statistic_view(id) on delete restrict,
     foreign key (stat_id) references statistic(id) on delete restrict
 );
