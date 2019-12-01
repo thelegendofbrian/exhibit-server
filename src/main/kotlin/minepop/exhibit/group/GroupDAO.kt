@@ -25,7 +25,7 @@ class GroupDAO: DAO() {
         connect().use { c ->
             var sql = "select id, name, owner_user_id from `group`"
             contains?.let {
-                sql += " where name like '%' || ? || '%'"
+                sql += " where name like concat('%', ?, '%')"
             }
             userId?.let {
                 sql += if (contains == null) " where" else " and"
@@ -42,7 +42,8 @@ class GroupDAO: DAO() {
                     ps.setLong(idx, userId)
                     idx++
                 }
-                ps.setInt(idx, page)
+                val limitStart = (page - 1) * pageSize
+                ps.setInt(idx, limitStart)
                 idx++
                 ps.setInt(idx, pageSize)
                 val rs = ps.executeQuery()
