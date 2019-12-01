@@ -83,11 +83,14 @@ fun Route.scheduleRoutes() {
             call.respond(HttpStatusCode.NoContent)
         } else {
             val now = exhibitSession().now()
+            val response = JsonObject()
             val projectedSchedule = JsonArray()
             schedule.iterate(iterateStart = now, iterateEnd = now.plusDays(7)) {
-                projectedSchedule.add(it.toString())
+                projectedSchedule.add(it.dayOfWeek.value)
             }
-            call.respond(projectedSchedule)
+            response.addProperty("type", if (schedule is WeeklySchedule) "weekly" else "interval")
+            response.add("days", projectedSchedule)
+            call.respond(response)
         }
     }
 }
