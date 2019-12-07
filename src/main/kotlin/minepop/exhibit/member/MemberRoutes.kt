@@ -21,7 +21,7 @@ fun Route.memberRoutes() {
             route("activity") {
                 activityRoutes()
             }
-            route("settings/{view}") {
+            route("settings") {
                 settingsRoutes()
             }
         }

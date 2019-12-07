@@ -107,6 +107,32 @@ class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMem
     }
 }
 
+class NoneSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberId, startDate) {
+
+    override fun iterate0(
+        scheduleStart: LocalDate,
+        start: LocalDate,
+        end: LocalDate,
+        forEach: (date: LocalDate) -> Unit
+    ) {
+        var intervalDay = scheduleStart
+        while (intervalDay < end) {
+            intervalDay = intervalDay.plusDays(1)
+            if (intervalDay >= start) {
+                forEach(intervalDay)
+            }
+        }
+    }
+
+    override fun calculateStatsUpdate(stats: ScheduleStatsUpdate, start: LocalDate, end: LocalDate) {
+        iterate(scheduleStart = start, iterateEnd = end) {
+            stats.missedCheckins++
+        }
+        stats.isBonusCheckin = false
+        stats.missedCheckins--
+    }
+}
+
 data class ScheduleStatsUpdate(var groupMemberId: Long, var isBonusCheckin: Boolean, var missedCheckins: Int)
 
 fun Schedule?.newStats(): ScheduleStatsUpdate {

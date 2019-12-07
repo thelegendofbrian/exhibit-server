@@ -130,7 +130,12 @@ class ScheduleDAO: DAO() {
                 it.setInt(1, scheduleTypeId)
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    schedule = if (rs.getString(1) == "Weekly") WeeklySchedule(groupMemberId, startDate) else IntervalSchedule(groupMemberId, startDate)
+                    val type = rs.getString(1)
+                    schedule = when (type) {
+                        "Weekly" -> WeeklySchedule(groupMemberId, startDate)
+                        "Interval" -> IntervalSchedule(groupMemberId, startDate)
+                        else -> NoneSchedule(groupMemberId, startDate)
+                    }
                 }
             }
 

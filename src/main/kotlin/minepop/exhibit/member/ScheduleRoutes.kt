@@ -13,10 +13,7 @@ import minepop.exhibit.auth.currentDate
 import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
-import minepop.exhibit.schedule.IntervalSchedule
-import minepop.exhibit.schedule.Schedule
-import minepop.exhibit.schedule.ScheduleDAO
-import minepop.exhibit.schedule.WeeklySchedule
+import minepop.exhibit.schedule.*
 import java.sql.Date
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -44,6 +41,8 @@ fun Route.scheduleRoutes() {
         } else if (scheduleType == "interval") {
             schedule = IntervalSchedule(groupMemberId, startDate)
             schedule.days = body.get("days").asInt
+        } else if (scheduleType == "none") {
+            schedule = NoneSchedule(groupMemberId, startDate)
         }
         scheduleDAO.createUpdateSchedule(schedule!!)
         call.respond(HttpStatusCode.NoContent)
@@ -59,7 +58,13 @@ fun Route.scheduleRoutes() {
         } else {
             val body = JsonObject()
             body.addProperty("startDate", schedule.startDate.toString())
-            body.addProperty("type", if (schedule is WeeklySchedule) "weekly" else "interval")
+            body.addProperty("type",
+                when (schedule) {
+                    is WeeklySchedule -> "weekly"
+                    is IntervalSchedule -> "interval"
+                    else -> "none"
+                }
+            )
             if (schedule is WeeklySchedule) {
                 val array = JsonArray()
                 schedule.days.forEach {

@@ -3,6 +3,7 @@ package minepop.exhibit.stats
 import minepop.exhibit.checkin.Checkin
 import minepop.exhibit.dao.DAO
 import minepop.exhibit.schedule.ScheduleStatsUpdate
+import java.sql.Date
 
 class StatsDAO: DAO() {
 
@@ -17,6 +18,22 @@ class StatsDAO: DAO() {
             }
         }
         return null
+    }
+
+    fun retrieveScheduledCheckins(groupMemberId: Long, date: Date, pastDays: Int): List<Checkin> {
+        val checkins = mutableListOf<Checkin>()
+        connect().use { c ->
+            c.prepareStatement("select date from checkin where date_add(date, interval ? day) > ? and group_member_id = ? and is_bonus = 'N'").use {
+                it.setInt(1, pastDays)
+                it.setDate(2, date)
+                it.setLong(3, groupMemberId)
+                val rs = it.executeQuery()
+                while (rs.next()) {
+                    checkins.add(Checkin(rs.getDate(1), false))
+                }
+            }
+        }
+        return checkins
     }
 
     fun updateStats(stats: ScheduleStatsUpdate) {

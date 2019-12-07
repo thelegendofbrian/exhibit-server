@@ -128,7 +128,8 @@ insert into exhibit.day_of_week(id, day) values
 
 insert into exhibit.schedule_type(name) values
 ('Weekly'),
-('Interval');
+('Interval'),
+('None');
 
 insert into exhibit.statistic_view(name) values
 ('User'),

@@ -20,11 +20,10 @@ class CheckinDAO : DAO() {
         val checkins = mutableListOf<Checkin>()
         connect().use { c ->
             c.prepareStatement("select date, is_bonus from checkin where date_add(date, interval ? day) > ? and group_member_id = ?").use {
-                    ps ->
-                ps.setInt(1, pastDays)
-                ps.setDate(2, date)
-                ps.setLong(3, groupMemberId)
-                val rs = ps.executeQuery()
+                it.setInt(1, pastDays)
+                it.setDate(2, date)
+                it.setLong(3, groupMemberId)
+                val rs = it.executeQuery()
                 while (rs.next()) {
                     checkins.add(Checkin(rs.getDate(1), rs.getString(2) == "Y"))
                 }
