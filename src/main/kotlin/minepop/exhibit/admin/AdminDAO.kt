@@ -21,6 +21,7 @@ class AdminDAO: DAO() {
             }
             c.prepareStatement("insert into user_settings(user_id) values(?)").use {
                 it.setLong(1, userId!!)
+                it.executeUpdate()
             }
         }
 	}

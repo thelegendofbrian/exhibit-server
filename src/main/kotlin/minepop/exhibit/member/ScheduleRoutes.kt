@@ -33,16 +33,18 @@ fun Route.scheduleRoutes() {
         val startDate = Date.valueOf(LocalDate.parse(body.get("startDate").asString))
         val scheduleType = body.get("type").asString
         var schedule: Schedule? = null
-        if (scheduleType == "weekly") {
-            schedule = WeeklySchedule(groupMemberId, startDate)
-            body.get("days").asJsonArray.forEach {
-                (schedule as WeeklySchedule).days += it.asInt
+        when (scheduleType) {
+            "weekly" -> {
+                schedule = WeeklySchedule(groupMemberId, startDate)
+                body.get("days").asJsonArray.forEach {
+                    (schedule as WeeklySchedule).days += it.asInt
+                }
             }
-        } else if (scheduleType == "interval") {
-            schedule = IntervalSchedule(groupMemberId, startDate)
-            schedule.days = body.get("days").asInt
-        } else if (scheduleType == "none") {
-            schedule = NoneSchedule(groupMemberId, startDate)
+            "interval" -> {
+                schedule = IntervalSchedule(groupMemberId, startDate)
+                schedule.days = body.get("days").asInt
+            }
+            "none" -> schedule = NoneSchedule(groupMemberId, startDate)
         }
         scheduleDAO.createUpdateSchedule(schedule!!)
         call.respond(HttpStatusCode.NoContent)
