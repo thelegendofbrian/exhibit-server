@@ -36,7 +36,7 @@ fun Route.scheduleRoutes() {
         if (scheduleType == "weekly") {
             schedule = WeeklySchedule(groupMemberId, startDate)
             body.get("days").asJsonArray.forEach {
-                (schedule as WeeklySchedule).days += DayOfWeek.valueOf(it.asString.toUpperCase()).value
+                (schedule as WeeklySchedule).days += it.asInt
             }
         } else if (scheduleType == "interval") {
             schedule = IntervalSchedule(groupMemberId, startDate)
@@ -68,8 +68,7 @@ fun Route.scheduleRoutes() {
             if (schedule is WeeklySchedule) {
                 val array = JsonArray()
                 schedule.days.forEach {
-                    val day = DayOfWeek.of(it).getDisplayName(TextStyle.FULL, Locale.ENGLISH)
-                    array.add(day)
+                    array.add(it)
                 }
                 body.add("days", array)
             } else if (schedule is IntervalSchedule) {

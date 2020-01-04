@@ -28,7 +28,6 @@ fun Authentication.Configuration.installExhibitAuth() {
         skipWhen { it.sessions.get<ExhibitSession>() != null }
         validate { credentials ->
 
-            val timezone = request.headers["timezone"]!!
             request.cookies["Quick-Auth"]?.let {
                 dao.retrieveUserForQuickAuth(it)?.let { user ->
                     sessions.set(user.newSession())
@@ -42,7 +41,7 @@ fun Authentication.Configuration.installExhibitAuth() {
             }
 
             if (user.userSettings.timeZone == null) {
-                user.userSettings.timeZone = timezone
+                user.userSettings.timeZone = request.headers["timezone"]!!
                 userSettingsDAO.updateSettings(user.userSettings)
             }
 
