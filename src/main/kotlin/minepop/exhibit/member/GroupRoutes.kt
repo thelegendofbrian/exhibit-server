@@ -17,7 +17,13 @@ fun Route.memberGroupRoutes() {
     route("{groupId}") {
         post("/") {
             val groupId = call.parameters["groupId"]!!.toLong()
-            groupDAO.createGroupMember(groupId, exhibitSession().userId)
+            val userId = exhibitSession().userId
+            groupDAO.createGroupMember(groupId, userId)
+            if (groupDAO.retrieveGroupsByMember(userId).size == 1) {
+                var settings = userSettingsDAO.retrieveSettings(userId)
+                settings.defaultGroupId = groupId
+                userSettingsDAO.updateSettings(settings)
+            }
             call.respond(HttpStatusCode.NoContent)
         }
         delete("/") {
