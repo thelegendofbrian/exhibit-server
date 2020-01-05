@@ -16,7 +16,7 @@ class ScheduleDAO: DAO() {
 
             var scheduleTypeId: Int? = null
             c.prepareStatement("select id from schedule_type where name = ?").use {
-                it.setString(1, if (schedule is WeeklySchedule) "Weekly" else "Interval")
+                it.setString(1, if (schedule is WeeklySchedule) "Weekly" else if (schedule is IntervalSchedule) "Interval" else "None")
                 val rs = it.executeQuery()
                 if (rs.next()) {
                     scheduleTypeId = rs.getInt(1)
