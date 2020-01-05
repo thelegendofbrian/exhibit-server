@@ -32,8 +32,10 @@ fun Route.userRoutes() {
             post("/") {
                 val request = call.receive<JsonObject>()
                 val timeZone = request.get("timeZone").asString
-                val defaultGroupId = request.get("defaultGroupId").asLong
-                val displayName = request.get("displayName").asString
+                val defaultGroupIdElem = request.get("defaultGroupId")
+                val defaultGroupId = if (defaultGroupIdElem.isJsonNull) null else defaultGroupIdElem.asLong
+                val displayNameElem = request.get("displayName")
+                val displayName = if (displayNameElem.isJsonNull) null else displayNameElem.asString
                 val startOfWeek = request.get("startOfWeek").asInt
                 settingsDAO.updateSettings(UserSettings(exhibitSession().userId, timeZone, defaultGroupId, displayName, startOfWeek))
                 call.respond(HttpStatusCode.NoContent)

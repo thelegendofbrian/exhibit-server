@@ -32,7 +32,11 @@ class UserSettingsDAO: DAO() {
                 it.setLong(1, userId)
                 val rs = it.executeQuery()
                 rs.next()
-                return UserSettings(userId, rs.getString(1), rs.getLong(2), rs.getString(3), rs.getInt(4))
+                var defaultGroupId: Long? = rs.getLong(2)
+                if (rs.wasNull()) {
+                    defaultGroupId = null
+                }
+                return UserSettings(userId, rs.getString(1), defaultGroupId, rs.getString(3), rs.getInt(4))
             }
         }
     }
