@@ -24,6 +24,9 @@ fun Route.memberRoutes() {
             route("settings") {
                 settingsRoutes()
             }
+            route("text") {
+                textRoutes()
+            }
         }
     }
 }

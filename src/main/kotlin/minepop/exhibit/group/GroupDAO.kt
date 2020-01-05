@@ -3,6 +3,7 @@ package minepop.exhibit.group
 import minepop.exhibit.dao.DAO
 import minepop.exhibit.user.User
 import java.sql.PreparedStatement
+import java.sql.Types
 
 class GroupDAO: DAO() {
 
@@ -143,5 +144,52 @@ class GroupDAO: DAO() {
             }
         }
         return null
+    }
+
+    fun createUpdateGroupMemberText(groupMemberId: Long, type: String, text: String?) {
+        connect().use { c ->
+            var textId: Long? = null
+            c.prepareStatement("select id from group_member_text where group_member_id = ? and type = ?").use {
+                it.setLong(1, groupMemberId)
+                it.setString(2, type)
+                val rs = it.executeQuery()
+                if (rs.next()) {
+                    textId = rs.getLong(1)
+                }
+            }
+            if (textId == null) {
+                c.prepareStatement("insert into group_member_text(group_member_id, type, text) values (?, ?, ?)").use {
+                    it.setLong(1, groupMemberId)
+                    it.setString(2, type)
+                    if (text == null) {
+                        it.setNull(3, Types.VARCHAR)
+                    } else {
+                        it.setString(3, text)
+                    }
+                    it.executeUpdate()
+                }
+            } else {
+                c.prepareStatement("update group_member_text set text = ? where id = ?").use {
+                    if (text == null) {
+                        it.setNull(1, Types.VARCHAR)
+                    } else {
+                        it.setString(1, text)
+                    }
+                    it.setLong(2, textId!!)
+                    it.executeUpdate()
+                }
+            }
+        }
+    }
+
+    fun retrieveGroupMemberText(groupMemberId: Long, type: String): String? {
+        connect().use { c ->
+            c.prepareStatement("select text from group_member_text where group_member_id = ? and type = ?").use {
+                it.setLong(1, groupMemberId)
+                it.setString(2, type)
+                val rs = it.executeQuery()
+                return if (rs.next()) rs.getString(1) else null
+            }
+        }
     }
 }

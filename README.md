@@ -32,6 +32,15 @@ create table exhibit.group_member(
     foreign key (user_id) references user(id) on delete cascade
 );
 
+create table group_member_text(
+    id bigint primary key auto_increment,
+    group_member_id bigint not null,
+    type varchar(16) not null,
+    text text,
+    unique key(group_member_id, type),
+    foreign key (group_member_id) references group_member(id) on delete cascade
+);
+
 create table exhibit.group_member_stats(
     group_member_id bigint primary key,
     points bigint not null default 0,
