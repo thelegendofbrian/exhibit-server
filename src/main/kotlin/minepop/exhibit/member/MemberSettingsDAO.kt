@@ -30,13 +30,15 @@ class MemberSettingsDAO: DAO() {
                 it.executeUpdate()
             }
             c.prepareStatement("insert into member_settings_view(group_member_id, view_id, stat_id) values(?, " +
-                    "(select id from statistic_view where name = ?), (select id from statistic where name = ?))").use {
+                    "(select id from statistic_view where name = ?), " +
+                    "(select id from statistic where name = ? and view_id = (select id from statistic_view where name = ?)))").use {
                     ps ->
 
                 view.stats.forEach {
                     ps.setLong(1, groupMemberId)
                     ps.setString(2, viewName)
                     ps.setString(3, it)
+                    ps.setString(4, viewName)
                     ps.addBatch()
                 }
                 ps.executeBatch()

@@ -8,7 +8,6 @@ import io.ktor.response.respond
 import io.ktor.routing.*
 import minepop.exhibit.auth.currentDate
 import minepop.exhibit.auth.exhibitSession
-import minepop.exhibit.auth.now
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.schedule.NoneSchedule
 import minepop.exhibit.schedule.ScheduleDAO
@@ -17,6 +16,7 @@ import minepop.exhibit.user.UserSettingsDAO
 private val groupDAO = GroupDAO()
 private val userSettingsDAO = UserSettingsDAO()
 private val scheduleDAO = ScheduleDAO()
+private val memberSettingsDAO = MemberSettingsDAO()
 
 fun Route.memberGroupRoutes() {
     route("{groupId}") {
@@ -33,6 +33,8 @@ fun Route.memberGroupRoutes() {
 
             val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
             scheduleDAO.createUpdateSchedule(NoneSchedule(groupMemberId, exhibitSession().currentDate()))
+
+            memberSettingsDAO.createUpdateMemberSettingsView(groupMemberId, "user", MemberSettingsView(listOf("dayStreak", "adherence", "totalCheckins")))
 
             call.respond(HttpStatusCode.NoContent)
         }
