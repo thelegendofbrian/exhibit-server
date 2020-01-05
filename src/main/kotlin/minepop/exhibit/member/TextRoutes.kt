@@ -18,7 +18,7 @@ fun Route.textRoutes() {
         get("/") {
             val groupId = call.parameters["groupId"]!!.toLong()
             val type = call.parameters["type"]!!
-            val groupMemberId = groupDAO.retrieveGroupMemberId(exhibitSession().userId, groupId)!!
+            val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, exhibitSession().userId)!!
 
             val text = groupDAO.retrieveGroupMemberText(groupMemberId, type)
 
@@ -31,7 +31,7 @@ fun Route.textRoutes() {
         post("/") {
             val groupId = call.parameters["groupId"]!!.toLong()
             val type = call.parameters["type"]!!
-            val groupMemberId = groupDAO.retrieveGroupMemberId(exhibitSession().userId, groupId)!!
+            val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, exhibitSession().userId)!!
             val text = call.receiveText()
 
             groupDAO.createUpdateGroupMemberText(groupMemberId, type, text)
