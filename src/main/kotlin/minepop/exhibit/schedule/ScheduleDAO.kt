@@ -87,7 +87,7 @@ class ScheduleDAO: DAO() {
             val scheduleTypeIds = mutableListOf<Int>()
             val startDates = mutableListOf<Date>()
 
-            var sql = "select id, start_date, schedule_type_id from schedule where group_member_id = ? and start_date < ?"
+            var sql = "select id, start_date, schedule_type_id from schedule where group_member_id = ? and start_date <= ?"
             start?.let {
                 sql += " and start_date > ?"
             }

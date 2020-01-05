@@ -28,6 +28,11 @@ fun main(args: Array<String>) {
     if (prod) {
         io.ktor.server.netty.EngineMain.main(args)
     } else {
+        /*
+            IMPORTANT NOTE FOR DEV SERVER
+            Add the following to the IntelliJ IDEA ExhibitServerKt run configuration in the VM options field
+            -Duser.timezone=UTC
+         */
         val env = applicationEngineEnvironment {
             module { module() }
             connector {
