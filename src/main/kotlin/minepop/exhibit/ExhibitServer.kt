@@ -33,6 +33,9 @@ fun main(args: Array<String>) {
             Add the following to the IntelliJ IDEA ExhibitServerKt run configuration in the VM options field
             -Duser.timezone=UTC
          */
+        if (System.getProperty("user.timezone") != "UTC") {
+            throw Error("Timezone is incorrect!")
+        }
         val env = applicationEngineEnvironment {
             module { module() }
             connector {

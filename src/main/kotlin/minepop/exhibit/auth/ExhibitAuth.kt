@@ -14,6 +14,7 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.sessions.set
 import minepop.exhibit.Crypto
+import minepop.exhibit.conf
 import minepop.exhibit.prod
 import minepop.exhibit.user.UserSettingsDAO
 import java.util.*
@@ -33,10 +34,11 @@ fun Authentication.Configuration.installExhibitAuth() {
                     sessions.set(user.newSession())
                     return@validate UserIdPrincipal(credentials.name)
                 }
+                return@validate null
             }
 
             val user = dao.retrieveUser(credentials.name)
-            if (user == null || user.failedLogins >= 5) {
+            if (user == null || user.failedLogins >= conf.getFailedLoginLimit()) {
                 return@validate null
             }
 
@@ -56,6 +58,8 @@ fun Authentication.Configuration.installExhibitAuth() {
                 return@validate UserIdPrincipal(credentials.name)
             }
             else {
+                user.failedLogins++
+                dao.updateUser(user)
                 return@validate null
             }
         }

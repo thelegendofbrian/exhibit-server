@@ -10,6 +10,7 @@ class AppConfig : Config(Paths.get("exhibit-server.properties")) {
         populate(originPort, "3000") { it.testInt() }
         populate(sessionTimeout, "14400") { it.testInt() }
         props.computeIfAbsent(keystorePath) { "" }
+        populate(failedLoginLimit, "5") { it.testInt() }
     }
 
     fun getHost(): String {
@@ -32,11 +33,16 @@ class AppConfig : Config(Paths.get("exhibit-server.properties")) {
         return props.getProperty(keystorePath)
     }
 
+    fun getFailedLoginLimit(): Int {
+        return getInt(failedLoginLimit)
+    }
+
     companion object {
         private const val host = "host"
         private const val port = "port"
         private const val originPort = "originPort"
         private const val sessionTimeout = "sessionTimeout"
         private const val keystorePath = "keystorePath"
+        private const val failedLoginLimit = "failedLoginLimit"
     }
 }
