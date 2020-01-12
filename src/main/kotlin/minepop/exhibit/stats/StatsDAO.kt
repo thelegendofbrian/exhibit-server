@@ -39,16 +39,17 @@ class StatsDAO: DAO() {
     fun updateStats(stats: ScheduleStatsUpdate) {
         connect().use { c ->
             c.prepareStatement("update group_member_stats set" +
-                    " streak = case when ? then streak + 1 else 0 end," +
+                    " streak = case when ? = 0 then case when ? then streak else streak + 1 end else 0 end," +
                     " regular_checkins = case when ? then regular_checkins + 1 else regular_checkins end," +
                     " bonus_checkins = case when ? then bonus_checkins + 1 else bonus_checkins end," +
                     " missed_checkins = missed_checkins + ?" +
                     " where group_member_id = ?").use {
-                it.setBoolean(1, stats.missedCheckins == 0 && !stats.isBonusCheckin)
-                it.setBoolean(2, !stats.isBonusCheckin)
-                it.setBoolean(3, stats.isBonusCheckin)
-                it.setInt(4, stats.missedCheckins)
-                it.setLong(5, stats.groupMemberId)
+                it.setInt(1, stats.missedCheckins)
+                it.setBoolean(2, stats.isBonusCheckin)
+                it.setBoolean(3, !stats.isBonusCheckin)
+                it.setBoolean(4, stats.isBonusCheckin)
+                it.setInt(5, stats.missedCheckins)
+                it.setLong(6, stats.groupMemberId)
                 it.executeUpdate()
             }
         }
