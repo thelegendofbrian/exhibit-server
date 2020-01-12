@@ -39,7 +39,7 @@ class StatsDAO: DAO() {
     fun updateStats(stats: ScheduleStatsUpdate) {
         connect().use { c ->
             c.prepareStatement("update group_member_stats set" +
-                    " streak = case when ? = 0 then case when ? then streak else streak + 1 end else 0 end," +
+                    " streak = case when ? = 0 then case when ? then streak else streak + 1 end else 1 end," +
                     " regular_checkins = case when ? then regular_checkins + 1 else regular_checkins end," +
                     " bonus_checkins = case when ? then bonus_checkins + 1 else bonus_checkins end," +
                     " missed_checkins = missed_checkins + ?" +

@@ -173,13 +173,15 @@ fun List<Schedule>.calculateStatsUpdate(groupMemberId: Long, lastScheduledChecki
        return ScheduleStatsUpdate(groupMemberId, true, 0)
     } else {
 
-        val schedule = this[size - 1]
-        val totalStats = schedule.newStats()
-        val scheduleStart = schedule.startDate.toLocalDate()
-        val start = if (lastScheduledCheckin == null) scheduleStart.minusDays(1)
-            else if (scheduleStart > lastScheduledCheckin) scheduleStart.minusDays(1)
-            else lastScheduledCheckin
-        schedule.calculateStatsUpdate(totalStats, start, dateNow)
+        val activeSchedule = this[size - 1]
+        val totalStats = activeSchedule.newStats()
+        val scheduleStart = activeSchedule.startDate.toLocalDate()
+        val activeStart = when {
+            lastScheduledCheckin == null -> scheduleStart.minusDays(1)
+            scheduleStart > lastScheduledCheckin -> scheduleStart.minusDays(1)
+            else -> lastScheduledCheckin
+        }
+        activeSchedule.calculateStatsUpdate(totalStats, activeStart, dateNow)
 
         /*
             Iterate through all past schedules.
