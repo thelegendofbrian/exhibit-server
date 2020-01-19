@@ -17,13 +17,13 @@ private val scheduleDAO = ScheduleDAO()
 
 fun PipelineContext<Unit, ApplicationCall>.updateGroupStats(groupMemberId: Long, isCheckin: Boolean): ScheduleStatsUpdate? {
 
-    if (!statsDAO.transitionStatus(groupMemberId, "Ready", "In Progress"))
-        return null
-
     val now = exhibitSession().now()
     val dateNow = Date.valueOf(now)
     val lastUpdate = statsDAO.retrieveStatsState(groupMemberId)!!.lastUpdate
     if (dateNow == lastUpdate && !isCheckin)
+        return null
+
+    if (!statsDAO.transitionStatus(groupMemberId, "Ready", "In Progress"))
         return null
 
     val schedules = scheduleDAO.retrieveSchedules(groupMemberId, lastUpdate, dateNow)
