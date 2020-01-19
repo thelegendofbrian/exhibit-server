@@ -55,4 +55,16 @@ class AdminDAO: DAO() {
             }
         }
 	}
+
+    fun upgradeStatsStateLastCheckin() {
+        connect().use { c ->
+            c.prepareStatement("insert into group_member_stats_state(group_member_id, last_update, status_id)" +
+                    " select group_member.id," +
+                    " (select date from checkin where group_member_id = group_member.id and is_bonus = 'N' order by date desc limit 1)," +
+                    " (select id from status where description = 'Ready')" +
+                    " from group_member").use {
+                it.executeUpdate()
+            }
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package minepop.exhibit.member
 
 import io.ktor.application.call
+import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.Route
 import io.ktor.routing.get
@@ -20,10 +21,16 @@ private val scheduleDAO = ScheduleDAO()
 
 fun Route.memberStatisticsRoutes() {
     get("/") {
+
         val groupId = call.parameters["groupId"]!!.toLong()
         val pastDays = call.request.queryParameters["pastDays"]?.toInt()
         val userId = exhibitSession().userId
         val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
+
+        if (statsDAO.retrieveStatsState(groupMemberId)!!.status != "Ready") {
+            call.respond(HttpStatusCode.Accepted)
+            return@get
+        }
         val stats = statsDAO.retrieveStats(groupMemberId)
         val calcStats = stats.calculateStatistics()
 

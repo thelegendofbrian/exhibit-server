@@ -9,7 +9,7 @@ object Admin {
     @JvmStatic
     fun main(args: Array<String>) {
         if (args.isEmpty()) {
-            println("Missing action argument (user)")
+            println("Missing action argument (user, upgrade)")
             return
         }
         when (args[0].toLowerCase()) {
@@ -39,10 +39,28 @@ object Admin {
                     }
                 }
             }
+            "upgrade" -> {
+                if (args.size < 2) {
+                    println("Missing upgrade sub-action argument (statsStateLastCheckin)")
+                    return
+                }
+                when (args[1].toLowerCase()) {
+                    "statsStateLastCheckin" -> {
+                        upgradeStatsStateLastCheckin()
+                    }
+                    else -> {
+                        println("Unrecognized upgrade sub-action " + args[1])
+                    }
+                }
+            }
             else -> {
                 println("Unrecognized action " + args[0])
             }
         }
+    }
+
+    private fun upgradeStatsStateLastCheckin() {
+        adminDAO.upgradeStatsStateLastCheckin()
     }
 
     private fun deleteUser(args: Array<String>) {

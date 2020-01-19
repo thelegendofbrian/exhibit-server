@@ -11,6 +11,7 @@ import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.group.GroupDAO
 import minepop.exhibit.schedule.NoneSchedule
 import minepop.exhibit.schedule.ScheduleDAO
+import minepop.exhibit.stats.StatsDAO
 import minepop.exhibit.user.UserSettingsDAO
 
 private val groupDAO = GroupDAO()

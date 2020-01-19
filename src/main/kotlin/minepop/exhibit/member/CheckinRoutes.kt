@@ -12,15 +12,12 @@ import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.auth.now
 import minepop.exhibit.checkin.CheckinDAO
 import minepop.exhibit.group.GroupDAO
-import minepop.exhibit.schedule.ScheduleDAO
-import minepop.exhibit.schedule.calculateStatsUpdate
-import minepop.exhibit.stats.StatsDAO
+import minepop.exhibit.schedule.CheckinType
+import minepop.exhibit.stats.updateGroupStats
 import java.sql.Date
 
-private val scheduleDAO = ScheduleDAO()
 private val groupDAO = GroupDAO()
 private val checkinDAO = CheckinDAO()
-private val statsDAO = StatsDAO()
 
 fun Route.checkinRoutes() {
     get("/") {
@@ -49,12 +46,12 @@ fun Route.checkinRoutes() {
         val dateNow = Date.valueOf(now)
 
         val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
-        val lastScheduledCheckin = statsDAO.retrieveLastScheduledCheckin(groupMemberId)?.date
-        val schedules = scheduleDAO.retrieveSchedules(groupMemberId, lastScheduledCheckin, dateNow)
-
-        val stats = schedules.calculateStatsUpdate(groupMemberId, lastScheduledCheckin?.toLocalDate(), now)
-        statsDAO.updateStats(stats)
-        checkinDAO.createCheckin(groupMemberId, dateNow, stats.isBonusCheckin)
+        val stats = updateGroupStats(groupMemberId, true)
+        if (stats == null) {
+            call.respond(HttpStatusCode.BadRequest)
+            return@post
+        }
+        checkinDAO.createCheckin(groupMemberId, dateNow, stats.checkinType == CheckinType.BONUS)
 
         val body = JsonObject()
         body.addProperty("date", dateNow.toString())

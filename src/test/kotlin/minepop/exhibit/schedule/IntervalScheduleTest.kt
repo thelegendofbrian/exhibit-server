@@ -19,13 +19,24 @@ class IntervalScheduleTest {
     }
 
     @Test
+    fun normalCheckin() {
+        val now = LocalDate.parse("2019-11-12")
+        val lastCheckin = LocalDate.parse("2019-11-08")
+
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
+
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
+        assertEquals(0, stats!!.missedCheckins)
+    }
+
+    @Test
     fun normal() {
         val now = LocalDate.parse("2019-11-12")
         val lastCheckin = LocalDate.parse("2019-11-08")
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, false)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.NONE, stats!!.checkinType)
         assertEquals(0, stats!!.missedCheckins)
     }
 
@@ -34,20 +45,31 @@ class IntervalScheduleTest {
         val now = LocalDate.parse("2019-11-11")
         val lastCheckin = LocalDate.parse("2019-11-08")
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertTrue(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.BONUS, stats!!.checkinType)
         assertEquals(0, stats!!.missedCheckins)
     }
 
     @Test
-    fun normalMissed() {
+    fun normalMissed_withCheckin() {
         val now = LocalDate.parse("2019-11-20")
         val lastCheckin = LocalDate.parse("2019-11-08")
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
+        assertEquals(2, stats!!.missedCheckins)
+    }
+
+    @Test
+    fun normalMissed_noCheckin() {
+        val now = LocalDate.parse("2019-11-20")
+        val lastCheckin = LocalDate.parse("2019-11-08")
+
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, false)
+
+        assertEquals(CheckinType.NONE, stats!!.checkinType)
         assertEquals(2, stats!!.missedCheckins)
     }
 
@@ -56,9 +78,9 @@ class IntervalScheduleTest {
         val now = LocalDate.parse("2019-11-21")
         val lastCheckin = LocalDate.parse("2019-11-08")
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertTrue(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.BONUS, stats!!.checkinType)
         assertEquals(3, stats!!.missedCheckins)
     }
 }

@@ -29,9 +29,20 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-07") //Friday
         val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
+        assertEquals(0, stats!!.missedCheckins)
+    }
+
+    @Test
+    fun calculateStats_PreviousDayNoCheckin() {
+        val now = LocalDate.parse("2018-12-07") //Friday
+        val lastCheckin = LocalDate.parse("2018-12-06") //Thursday
+
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, false)
+
+        assertEquals(CheckinType.NONE, stats!!.checkinType)
         assertEquals(0, stats!!.missedCheckins)
     }
 
@@ -40,9 +51,9 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-10") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
         assertEquals(0, stats!!.missedCheckins)
     }
 
@@ -51,9 +62,9 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-08") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertTrue(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.BONUS, stats!!.checkinType)
         assertEquals(0, stats!!.missedCheckins)
     }
 
@@ -62,20 +73,31 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-15") //Saturday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertTrue(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.BONUS, stats!!.checkinType)
         assertEquals(5, stats!!.missedCheckins)
     }
 
     @Test
-    fun calculateStats_StreakBroken() {
+    fun calculateStats_StreakBrokenWithCheckin() {
         val now = LocalDate.parse("2018-12-11") //Tuesday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
+        assertEquals(1, stats!!.missedCheckins)
+    }
+
+    @Test
+    fun calculateStats_StreakBrokenNoCheckin() {
+        val now = LocalDate.parse("2018-12-11") //Tuesday
+        val lastCheckin = LocalDate.parse("2018-12-07") //Friday
+
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, false)
+
+        assertEquals(CheckinType.NONE, stats!!.checkinType)
         assertEquals(1, stats!!.missedCheckins)
     }
 
@@ -84,9 +106,9 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2018-12-24") //Monday
         val lastCheckin = LocalDate.parse("2018-12-07") //Friday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertFalse(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.SCHEDULED, stats!!.checkinType)
         assertEquals(10, stats!!.missedCheckins)
     }
 
@@ -95,9 +117,9 @@ class WeeklyScheduleTest {
         val now = LocalDate.parse("2020-03-01") //Sunday
         val lastCheckin = LocalDate.parse("2020-02-27") //Thursday
 
-        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now)
+        schedule!!.calculateStatsUpdate(stats!!, lastCheckin, now, true)
 
-        assertTrue(stats!!.isBonusCheckin)
+        assertEquals(CheckinType.BONUS, stats!!.checkinType)
         assertEquals(1, stats!!.missedCheckins)
     }
 }

@@ -119,6 +119,11 @@ class GroupDAO: DAO() {
                 it.setLong(1, groupMemberId!!)
                 it.executeUpdate()
             }
+            c.prepareStatement("insert into group_member_stats_state(group_member_id, status_id) values(?, (select id from status where description = ?))").use {
+                it.setLong(1, groupMemberId!!)
+                it.setString(2, "Ready")
+                it.executeUpdate()
+            }
         }
     }
 

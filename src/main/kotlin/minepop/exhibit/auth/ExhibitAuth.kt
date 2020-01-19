@@ -16,6 +16,7 @@ import io.ktor.sessions.set
 import minepop.exhibit.Crypto
 import minepop.exhibit.conf
 import minepop.exhibit.prod
+import minepop.exhibit.stats.startStatsThread
 import minepop.exhibit.user.UserSettingsDAO
 import java.util.*
 
@@ -71,6 +72,9 @@ fun Route.authRoutes() {
         val body = JsonObject()
         body.addProperty("userName", exhibitSession().userName)
         body.addProperty("userId", exhibitSession().userId)
+
+        startStatsThread()
+
         call.respond(body)
     }
     post("logout") {
