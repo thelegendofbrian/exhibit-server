@@ -6,12 +6,11 @@ import io.ktor.sessions.get
 import io.ktor.sessions.sessions
 import io.ktor.util.pipeline.PipelineContext
 import minepop.exhibit.prod
-import minepop.exhibit.user.UserSettings
 import java.sql.Date
 import java.time.LocalDate
 import java.time.ZoneId
 
-data class ExhibitSession(val userId: Long, val userName: String, val timezone: String, val defaultGroupId: Long?)
+data class ExhibitSession(val userId: Long, val userName: String, val timezone: String, val defaultGroupId: Long?, var debugDate: String? = null)
 
 fun PipelineContext<Unit, ApplicationCall>.exhibitSession(): ExhibitSession {
     return this.call.sessions.get<ExhibitSession>()!!
@@ -22,5 +21,5 @@ fun ExhibitSession.currentDate(): Date {
 }
 
 fun ExhibitSession.now(): LocalDate {
-    return LocalDate.now(ZoneId.of(timezone))
+    return if (prod || debugDate == null) LocalDate.now(ZoneId.of(timezone)) else LocalDate.parse(debugDate)
 }

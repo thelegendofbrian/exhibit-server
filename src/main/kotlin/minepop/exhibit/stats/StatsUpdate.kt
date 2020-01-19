@@ -28,7 +28,8 @@ fun PipelineContext<Unit, ApplicationCall>.updateGroupStats(groupMemberId: Long,
 
     val schedules = scheduleDAO.retrieveSchedules(groupMemberId, lastUpdate, dateNow)
     val stats = schedules.calculateStatsUpdate(groupMemberId, lastUpdate?.toLocalDate(), now, isCheckin)
-    val updatedStats = statsDAO.retrieveStats(groupMemberId).updateStatistics(stats)
+    val oldStats = statsDAO.retrieveStats(groupMemberId)
+    val updatedStats = oldStats.updateStatistics(stats)
 
     statsDAO.updateStats(updatedStats)
     statsDAO.transitionStatus(groupMemberId, "In Progress", "Ready")

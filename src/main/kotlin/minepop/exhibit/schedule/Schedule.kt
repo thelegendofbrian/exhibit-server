@@ -93,8 +93,13 @@ class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMem
             For each iteration, there is expected to be 1 check in.
             So for each iteration past the first, there is a missed check in.
          */
+        var first = true
         iterate(scheduleStart = start, iterateEnd = end) {
-            stats.missedCheckins++
+            if (first) {
+                first = false
+            } else {
+                stats.missedCheckins++
+            }
             intervalDay = it
         }
 
@@ -104,10 +109,6 @@ class IntervalSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMem
         stats.checkinType = if (isCheckin)
             if (end == intervalDay) CheckinType.SCHEDULED else CheckinType.BONUS
             else CheckinType.NONE
-        /*
-            The first iteration needs to be reversed, since it was not a missed check in.
-         */
-        stats.missedCheckins--
     }
 }
 
@@ -129,11 +130,15 @@ class NoneSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberI
     }
 
     override fun calculateStatsUpdate(stats: ScheduleStatsUpdate, start: LocalDate, end: LocalDate, isCheckin: Boolean) {
+        var first = true
         iterate(scheduleStart = start, iterateEnd = end) {
-            stats.missedCheckins++
+            if (first) {
+                first = false
+            } else {
+                stats.missedCheckins++
+            }
         }
         stats.checkinType = if (isCheckin) CheckinType.BONUS else CheckinType.NONE
-        stats.missedCheckins--
     }
 }
 

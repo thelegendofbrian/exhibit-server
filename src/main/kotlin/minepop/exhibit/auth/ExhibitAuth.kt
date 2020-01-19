@@ -73,6 +73,8 @@ fun Route.authRoutes() {
         body.addProperty("userName", exhibitSession().userName)
         body.addProperty("userId", exhibitSession().userId)
 
+        if (!prod)
+            exhibitSession().debugDate = call.request.cookies["debugDate"]
         startStatsThread()
 
         call.respond(body)
