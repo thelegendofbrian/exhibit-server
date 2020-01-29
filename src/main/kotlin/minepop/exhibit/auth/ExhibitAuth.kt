@@ -35,7 +35,7 @@ fun Authentication.Configuration.installExhibitAuth() {
                     sessions.set(user.newSession())
                     return@validate UserIdPrincipal(credentials.name)
                 }
-                return@validate null
+                // attempt normal auth if Quick-Auth not recognized
             }
 
             val user = dao.retrieveUser(credentials.name)

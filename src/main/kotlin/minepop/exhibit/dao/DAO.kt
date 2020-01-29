@@ -11,7 +11,12 @@ abstract class DAO {
 
     protected fun connect(): ConnectionWrapper {
         val c = connectionPool.take()
-        return if (c.isValid()) c else ConnectionWrapper(connect0())
+        return if (c.isValid())
+            c
+        else {
+            c.closeConnection()
+            ConnectionWrapper(connect0())
+        }
     }
 
     class ConnectionWrapper(private val connection: Connection) : Closeable {
@@ -31,6 +36,14 @@ abstract class DAO {
         override fun close() {
             connectionPool.offer(this)
         }
+
+        fun closeConnection() {
+            try {
+                connection.close()
+            } catch (t: Throwable) {
+                // ignore
+            }
+        }
     }
 
     companion object {
@@ -41,6 +54,11 @@ abstract class DAO {
         init {
             for (i in 0 until conf.getConnectionPool())
                 connectionPool.offer(ConnectionWrapper(connect0()))
+            Runtime.getRuntime().addShutdownHook(Thread() {
+                connectionPool.forEach {
+                    it.closeConnection()
+                }
+            })
         }
 
         private fun connect0(): Connection {

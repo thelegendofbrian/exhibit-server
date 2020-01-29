@@ -48,7 +48,9 @@ fun Route.checkinRoutes() {
         val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
         val stats = updateGroupStats(groupMemberId, true)
         if (stats == null) {
-            call.respond(HttpStatusCode.BadRequest)
+            // there is no good std http code for this scenario
+            // 503 is closest, but it is not really a server error
+            call.respond(HttpStatusCode.ServiceUnavailable)
             return@post
         }
         checkinDAO.createCheckin(groupMemberId, dateNow, stats.checkinType == CheckinType.BONUS)

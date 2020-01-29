@@ -138,7 +138,7 @@ class NoneSchedule(groupMemberId: Long, startDate: Date) : Schedule(groupMemberI
                 stats.missedCheckins++
             }
         }
-        stats.checkinType = if (isCheckin) CheckinType.BONUS else CheckinType.NONE
+        stats.checkinType = if (isCheckin) CheckinType.SCHEDULED else CheckinType.NONE
     }
 }
 
