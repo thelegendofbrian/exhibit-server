@@ -45,7 +45,7 @@ object Admin {
                     return
                 }
                 when (args[1].toLowerCase()) {
-                    "statsStateLastCheckin" -> {
+                    "statsstatelastcheckin" -> {
                         upgradeStatsStateLastCheckin()
                     }
                     else -> {
