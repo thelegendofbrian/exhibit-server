@@ -32,8 +32,12 @@ fun PipelineContext<Unit, ApplicationCall>.updateGroupStats(groupMemberId: Long,
     val updatedStats = oldStats.updateStatistics(stats)
 
     statsDAO.updateStats(updatedStats)
+    /*
+        Only advance lastUpdate to today if a checkin was made.
+        Otherwise, advance to yesterday.
+     */
+    statsDAO.updateStatsState(groupMemberId, if (isCheckin) dateNow else Date.valueOf(now.minusDays(1)))
     statsDAO.transitionStatus(groupMemberId, "In Progress", "Ready")
-    statsDAO.updateStatsState(groupMemberId, dateNow)
 
     return stats
 }
