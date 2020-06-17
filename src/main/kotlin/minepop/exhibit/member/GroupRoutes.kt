@@ -2,10 +2,12 @@ package minepop.exhibit.member
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.util.pipeline.PipelineContext
 import minepop.exhibit.auth.currentDate
 import minepop.exhibit.auth.exhibitSession
 import minepop.exhibit.group.GroupDAO
@@ -23,20 +25,7 @@ fun Route.memberGroupRoutes() {
     route("{groupId}") {
         post("/") {
             val groupId = call.parameters["groupId"]!!.toLong()
-            val userId = exhibitSession().userId
-            groupDAO.createGroupMember(groupId, userId)
-
-            if (groupDAO.retrieveGroupsByMember(userId).size == 1) {
-                var settings = userSettingsDAO.retrieveSettings(userId)
-                settings.defaultGroupId = groupId
-                userSettingsDAO.updateSettings(settings)
-            }
-
-            val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
-            scheduleDAO.createUpdateSchedule(NoneSchedule(groupMemberId, exhibitSession().currentDate()))
-
-            memberSettingsDAO.createUpdateMemberSettingsView(groupMemberId, "user", MemberSettingsView(listOf("dayStreak", "adherence", "totalCheckins")))
-
+            createGroupMemberDefault(groupId)
             call.respond(HttpStatusCode.NoContent)
         }
         delete("/") {
@@ -61,4 +50,22 @@ fun Route.memberGroupRoutes() {
         response.add("groups", groupsArray)
         call.respond(response)
     }
+}
+
+fun PipelineContext<Unit, ApplicationCall>.createGroupMemberDefault(groupId: Long) {
+
+    val userId = exhibitSession().userId
+
+    groupDAO.createGroupMember(groupId, userId)
+
+    if (groupDAO.retrieveGroupsByMember(userId).size == 1) {
+        var settings = userSettingsDAO.retrieveSettings(userId)
+        settings.defaultGroupId = groupId
+        userSettingsDAO.updateSettings(settings)
+    }
+
+    val groupMemberId = groupDAO.retrieveGroupMemberId(groupId, userId)!!
+    scheduleDAO.createUpdateSchedule(NoneSchedule(groupMemberId, exhibitSession().currentDate()))
+
+    memberSettingsDAO.createUpdateMemberSettingsView(groupMemberId, "user", MemberSettingsView(listOf("dayStreak", "adherence", "totalCheckins")))
 }

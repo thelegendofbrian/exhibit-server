@@ -54,7 +54,7 @@ abstract class DAO {
         init {
             for (i in 0 until conf.getConnectionPool())
                 connectionPool.offer(ConnectionWrapper(connect0()))
-            Runtime.getRuntime().addShutdownHook(Thread() {
+            Runtime.getRuntime().addShutdownHook(Thread {
                 connectionPool.forEach {
                     it.closeConnection()
                 }

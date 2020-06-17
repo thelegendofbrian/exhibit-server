@@ -7,6 +7,7 @@ import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
 import minepop.exhibit.auth.exhibitSession
+import minepop.exhibit.member.createGroupMemberDefault
 
 private val groupDAO = GroupDAO()
 
@@ -29,6 +30,7 @@ fun Route.groupRoutes() {
                 call.respond(HttpStatusCode.NoContent)
             } else {
                 val groupId = groupDAO.createGroup(exhibitSession().userId, body.get("name").asString)
+                createGroupMemberDefault(groupId)
                 val response = JsonObject()
                 response.addProperty("id", groupId)
                 call.respond(response)
